@@ -1,0 +1,5 @@
+# Only for training/experiments. Core app uses the Python standard library.
+numpy>=1.26,<3
+scikit-learn>=1.5,<2
+joblib>=1.4,<2
+# Install gensim separately for word_vectors.py, torch+transformers for DistilBERT.
