@@ -1,7 +1,0 @@
-{
-  "validation_rmse": 0.9163506778744787,
-  "test_rmse": 0.9528706756413112,
-  "test_coverage": 0.9072214713265109,
-  "rank": 32.0,
-  "reg_param": 0.1
-}

@@ -1,0 +1,3 @@
+# Optional runner: current tests also execute with stdlib unittest.
+# Manual installation only; no package installation is performed by scripts.
+pytest==8.4.2

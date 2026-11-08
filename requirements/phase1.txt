@@ -1,0 +1,3 @@
+# Phase 0 diagnostics and Phase 1 validators use Python 3.11 standard library.
+# No third-party package installation is needed to run their unittest suites.
+# Do not run installation commands automatically.

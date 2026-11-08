@@ -1,130 +1,63 @@
-# ==============================================================================
-# Python Virtual Environments
-# ==============================================================================
+# Preserve user data, environments and generated artifacts locally.
 .venv/
 **/.venv/
 venv/
 **/venv/
-env/
-**/env/
-ENV/
-
-# ==============================================================================
-# Bytecode and Cache
-# ==============================================================================
 __pycache__/
-**/__pycache__/
 *.py[cod]
-*$py.class
 .pytest_cache/
-**/.pytest_cache/
 .ipynb_checkpoints/
-**/.ipynb_checkpoints/
+.coverage
+htmlcov/
 
-# ==============================================================================
-# Build and Distribution Artifacts
-# ==============================================================================
+# Local backup / historical implementation preserved on disk only
+temp/
+**/temp/
+
+# Credentials: templates remain reviewable.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Original and derived datasets must not be accidentally staged.
+data/raw/
+data/bronze/
+data/silver/
+data/gold/
+data/processed/
+data/exports/
+data/events/
+data/checkpoints/
+
+# Model weights and runtime state; source and model cards remain visible.
+*.safetensors
+*.pt
+*.pth
+*.ckpt
+*.joblib
+*.npz
+*.sqlite
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+*.db
+models/
+.cache/
+artifacts/
+logs/
+debug.log
+
+# JVM and frontend build output.
+**/target/
+**/.bloop/
+**/.metals/
+**/node_modules/
+**/.next/
+**/out/
 build/
 dist/
 *.egg-info/
-**/*.egg-info/
-
-# ==============================================================================
-# Environment & Secrets (Never commit credentials)
-# ==============================================================================
-.env
-*.env
-!.env.example
-!**/.env.example
-
-# ==============================================================================
-# Datasets (Prevent pushing raw/processed big data dumps)
-# ==============================================================================
-data/raw/
-**/data/raw/
-data/processed/
-**/data/processed/
-data/events/
-**/data/events/
-
-# ==============================================================================
-# SQLite Databases & Runtime Storage (Local runtime state)
-# ==============================================================================
-*.sqlite
-*.sqlite3
-*.db
-*.sqlite*-wal
-*.sqlite*-shm
-data/runtime/
-**/data/runtime/
-data/demo-app/cinescope.sqlite3
-**/data/demo-app/cinescope.sqlite3
-
-# ==============================================================================
-# Pre-trained Models
-# Keep core pre-trained models; ignore dynamic or oversized checkpoints
-# ==============================================================================
-models/*
-**/models/*
-!models/.gitkeep
-!**/models/.gitkeep
-!models/model-card.json
-!**/models/model-card.json
-!models/sentiment_tfidf.joblib
-!**/models/sentiment_tfidf.joblib
-!models/als_factors.npz
-!**/models/als_factors.npz
-
-# ==============================================================================
-# Metric Reports & Evaluation Artifacts
-# Keep benchmark reports, metrics, templates; ignore scratch/transient outputs
-# ==============================================================================
-artifacts/*
-**/artifacts/*
-!artifacts/.gitkeep
-!**/artifacts/.gitkeep
-!artifacts/als_metrics.json
-!**/artifacts/als_metrics.json
-!artifacts/aspect_annotation_template.csv
-!**/artifacts/aspect_annotation_template.csv
-!artifacts/notebook_execution.json
-!**/artifacts/notebook_execution.json
-!artifacts/ranking_metrics.json
-!**/artifacts/ranking_metrics.json
-!artifacts/runtime_versions.json
-!**/artifacts/runtime_versions.json
-!artifacts/sentiment_tfidf_metrics.json
-!**/artifacts/sentiment_tfidf_metrics.json
-
-# ==============================================================================
-# Scala / SBT Build Artifacts
-# ==============================================================================
-scala/target/
-**/scala/target/
-scala/project/target/
-**/scala/project/target/
-target/
-**/target/
-
-# ==============================================================================
-# Frontend Dependencies
-# ==============================================================================
-node_modules/
-**/node_modules/
-
-# ==============================================================================
-# OS & Editor Junk
-# ==============================================================================
-.DS_Store
-**/.DS_Store
-._*
-**/._*
 Thumbs.db
-**/Thumbs.db
-desktop.ini
-.idea/
-**/.idea/
-.vscode/
-**/.vscode/
-*.swp
-*~
+.DS_Store

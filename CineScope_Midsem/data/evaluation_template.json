@@ -1,9 +1,0 @@
-{
-  "k": 10,
-  "sentiment": [],
-  "aspects": {"Story": [], "Acting": [], "Visuals": [], "Music": [], "Pacing": [], "Ending": []},
-  "ner": [],
-  "retrieval": [],
-  "recommendations": [],
-  "summaries": []
-}
