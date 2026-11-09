@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MovieLens CSV interpretation",
+  "description": "CSV schemas are explicitly validated by dataset_tools.movielens.",
+  "type": "object",
+  "minProperties": 1,
+  "additionalProperties": false,
+  "properties": {
+    "movies": {
+      "type": "object",
+      "required": ["movieId", "title", "genres"],
+      "additionalProperties": false,
+      "properties": {
+        "movieId": {"type": "integer", "minimum": 1},
+        "title": {"type": "string", "minLength": 1},
+        "genres": {"type": "string", "minLength": 1}
+      }
+    },
+    "ratings": {
+      "type": "object",
+      "required": ["userId", "movieId", "rating", "timestamp"],
+      "additionalProperties": false,
+      "properties": {
+        "userId": {"type": "integer", "minimum": 1},
+        "movieId": {"type": "integer", "minimum": 1},
+        "rating": {"type": "number", "minimum": 0.5, "maximum": 5, "multipleOf": 0.5},
+        "timestamp": {"type": "integer", "minimum": 0}
+      }
+    },
+    "tags": {
+      "type": "object",
+      "required": ["userId", "movieId", "tag", "timestamp"],
+      "additionalProperties": false,
+      "properties": {
+        "userId": {"type": "integer", "minimum": 1},
+        "movieId": {"type": "integer", "minimum": 1},
+        "tag": {"type": "string", "minLength": 1, "pattern": "\\S"},
+        "timestamp": {"type": "integer", "minimum": 0}
+      }
+    },
+    "links": {
+      "type": "object",
+      "required": ["movieId", "imdbId", "tmdbId"],
+      "additionalProperties": false,
+      "properties": {
+        "movieId": {"type": "integer", "minimum": 1},
+        "imdbId": {"type": "string", "pattern": "^[0-9]+$"},
+        "tmdbId": {"type": ["string", "null"]}
+      }
+    }
+  }
+}

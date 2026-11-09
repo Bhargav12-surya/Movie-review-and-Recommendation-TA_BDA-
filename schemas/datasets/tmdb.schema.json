@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Locally supplied TMDB movie metadata snapshot",
+  "type": "object",
+  "required": ["id", "title"],
+  "properties": {
+    "id": {"type": "integer", "minimum": 1, "maximum": 9223372036854775807},
+    "title": {"type": "string", "minLength": 1},
+    "overview": {"type": ["string", "null"]},
+    "release_date": {"type": ["string", "null"]},
+    "runtime": {"type": ["integer", "null"], "minimum": 0},
+    "original_language": {"type": ["string", "null"]},
+    "genres": {"type": ["array", "null"], "items": {
+      "type": "object", "required": ["id", "name"],
+      "properties": {"id": {"type": "integer", "minimum": 1},
+                     "name": {"type": "string", "minLength": 1}}
+    }},
+    "poster_path": {"type": ["string", "null"]},
+    "backdrop_path": {"type": ["string", "null"]},
+    "credits": {"type": ["object", "array", "null"]},
+    "keywords": {"type": ["object", "array", "null"]}
+  },
+  "$comment": "Production accepted export additionally requires an approved local provenance manifest. IDs remain in the TMDB source namespace; no network retrieval, canonical mapping or artwork permission is inferred."
+}

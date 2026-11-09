@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Stanford IMDb reference split record",
+  "type": "object",
+  "required": ["source_path", "source_split", "split", "label", "label_task", "source_movie_id", "application_movie_id", "raw_sha256", "normalized_sha256", "group_id", "exclusion_reason"],
+  "properties": {
+    "source_path": {"type": "string", "minLength": 1},
+    "source_split": {"enum": ["train", "test"]},
+    "split": {"enum": ["train", "validation", "test", "excluded", "unsup"]},
+    "label": {"enum": [0, 1, null]},
+    "label_task": {"const": "binary_imdb"},
+    "source_movie_id": {"type": ["string", "null"]},
+    "application_movie_id": {"type": "null"},
+    "raw_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "normalized_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "group_id": {"type": ["string", "null"]},
+    "exclusion_reason": {"type": ["string", "null"]}
+  },
+  "additionalProperties": false
+}

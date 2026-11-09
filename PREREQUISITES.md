@@ -1,789 +1,510 @@
-# Prerequisites — Movie Review & Recommendation System
+# Prerequisites — Movie Review and Recommendation System
 
-**Audit date:** 8 November 2026, Asia/Calcutta  
-**Workspace:** `D:\BDA_TA`  
-**Hardware:** Intel Core 7 240H · 16 GB RAM · NVIDIA RTX 5050 (8 GB VRAM, sm_120) · Windows 11
+Updated: **9 November 2026, Asia/Calcutta**. Workspace: **D:\BDA_TA**.
 
-> [!IMPORTANT]
-> This document lists every software prerequisite, its exact compatible version, official download link, environment configuration, and verification command. **No software has been installed, upgraded, or downloaded by this audit.** The user will manually install each item in the stated order.
+This is a manual installation guide. The user downloads and installs software.
+Project scripts do not install packages, resolve SBT dependencies, download models,
+fetch datasets, change global Windows settings or upgrade existing installations.
 
----
+The versions below are **documented installation candidates**. Published packages,
+declared version requirements and official platform support were checked. They are
+not a solved transitive lockfile or a claim that the complete stack has passed on
+this laptop. After each manual installation, run its verification before starting
+dependent implementation. Keep the historical audits intact; current execution
+evidence belongs in IMPLEMENTATION_STATUS.md and generated reports.
 
-## Table of Contents
+## 1. Current environment and immediate readiness
 
-1. [Current Environment Summary](#1-current-environment-summary)
-2. [Mandatory Software — Installation Order](#2-mandatory-software--installation-order)
-3. [Optional Software](#3-optional-software)
-4. [Python Package Dependencies](#4-python-package-dependencies)
-5. [Environment Variable Configuration](#5-environment-variable-configuration)
-6. [Verification Commands](#6-verification-commands)
-7. [Compatibility Notes](#7-compatibility-notes)
-8. [Known Issues and Solutions](#8-known-issues-and-solutions)
-9. [Disk Space Budget](#9-disk-space-budget)
-10. [Installation Quick Reference](#10-installation-quick-reference)
+The root .venv now exists and is an isolated **Python 3.11.9** environment. It has
+**pip 24.0 only** among the inspected project dependencies. This supersedes the
+earlier audit observation that the root environment was absent.
 
----
-
-## 1. Current Environment Summary
-
-### Already Installed ✅
-
-| Software | Version | Location |
+| Component | Observed state | Action |
 |---|---|---|
-| **Python** | 3.11.9 (64-bit) | `C:\Users\bharg\AppData\Local\Programs\Python\Python311\python.exe` |
-| **pip** | 24.0 | Bundled with Python 3.11 |
-| **JDK** | Temurin 21.0.12.1+1-LTS | `C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot` |
-| **javac** | 21.0.12.1 | Same Adoptium installation |
-| **Git** | 2.56.0.windows.4 | `C:\Program Files\Git\cmd\git.exe` |
-| **NVIDIA Driver** | 621.01 (CUDA UMD 13.5) | System-managed |
-| **GPU** | RTX 5050 Laptop, 8151 MiB VRAM, Compute 12.0 | Hardware |
-| **VS Code** | 1.143.1 (x64) | Installed |
-| **NumPy** | 2.4.6 | Global Python 3.11 |
-| **pandas** | 3.1.0 | Global Python 3.11 |
-| **scikit-learn** | 1.9.1 | Global Python 3.11 |
-| **Pydantic** | 2.14.2 | Global Python 3.11 |
-| **matplotlib** | 3.11.2 | Global Python 3.11 |
-| **seaborn** | 0.13.2 | Global Python 3.11 |
-
-### Not Installed / Not on PATH ❌
-
-| Software | Status |
-|---|---|
-| **Node.js / npm** | Not found |
-| **SBT** | Not found |
-| **Apache Spark distribution** | Not found; `SPARK_HOME` unset |
-| **PostgreSQL** | Not found; no service detected |
-| **pgvector** | No PostgreSQL to host it |
-| **PyTorch** | Not in Python 3.11 |
-| **Transformers / Datasets / Accelerate** | Not installed |
-| **Sentence Transformers** | Not installed |
-| **FastAPI / Uvicorn / SQLAlchemy** | Not installed |
-| **PySpark** | Not installed |
-| **CUDA Toolkit (nvcc)** | Not on PATH; `CUDA_PATH` unset |
-| **scalac** | Not on PATH (Scala 3 wrapper exists but not 2.13 compiler) |
-
-### Needs Reconfiguration ⚠️
-
-| Issue | Detail |
-|---|---|
-| **JAVA_HOME mismatch** | Points to Coursier-cached `jdk-21.0.12+8` with URL-encoded path chars; PATH `java` points to properly installed `jdk-21.0.12.101-hotspot`. Must be reconciled. |
-| **Python `py` launcher** | Defaults to Python 3.14.6; must not be used for this project |
-| **Preserved `temp/.venv`** | Uses Python 3.12.10; keep preserved, do not reuse |
-
----
-
-## 2. Mandatory Software — Installation Order
-
-Install in the following sequence. Each item lists its phase dependency.
-
----
-
-### Step 1: Reconcile JAVA_HOME (Phase 0)
-
-**No download needed** — JDK 21 is already installed. Fix the environment variable only.
-
-**Action:** Set `JAVA_HOME` to the properly installed Adoptium JDK path:
-
-```
-JAVA_HOME = C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot
-```
-
-See [Section 5](#5-environment-variable-configuration) for how to set this.
-
-**Verification:**
-```powershell
-java -version
-javac -version
-echo $env:JAVA_HOME
-```
-All three should show the **21.0.12.1** Temurin installation.
-
----
-
-### Step 2: Create Python 3.11 Virtual Environment (Phase 0)
-
-**No download needed** — Python 3.11.9 is already installed.
-
-**Action:** Create a new isolated virtual environment at the project root:
-```powershell
-& "C:\Users\bharg\AppData\Local\Programs\Python\Python311\python.exe" -m venv .venv
-```
-
-**Activation:**
-```powershell
-.\.venv\Scripts\Activate.ps1
-```
-
-**Verification:**
-```powershell
-python --version           # Should show 3.11.9
-python -c "import sys; print(sys.executable)"   # Should show D:\BDA_TA\.venv\Scripts\python.exe
-pip --version
-```
-
-> [!WARNING]
-> Do not run `venv --clear` against the existing `temp/.venv` directory. Create `.venv` at the project root only.
-
----
-
-### Step 3: SBT — Scala Build Tool (Phase 2)
-
-| Property | Value |
-|---|---|
-| **Required version** | 1.10.7 (pinned in legacy `project/build.properties`) |
-| **Exact download** | Windows `.msi` installer |
-| **Official page** | https://www.scala-sbt.org/download.html |
-| **Direct download** | https://github.com/sbt/sbt/releases/download/v1.10.7/sbt-1.10.7.msi |
-| **Size** | ~130 MB installer |
-| **License** | Apache 2.0 |
-
-**Installation notes:**
-- Run the `.msi` installer; it adds `sbt` to PATH automatically.
-- SBT will manage the Scala 2.13 compiler internally — you do not need a separate `scalac` installation.
-- SBT requires JDK; it will use the corrected `JAVA_HOME` from Step 1.
-
-**Verification:**
-```powershell
-sbt --version
-sbt "print scalaVersion"    # Run inside the scala project directory after build.sbt is created
-```
-
----
-
-### Step 4: Apache Spark 4.3.0 Distribution (Phase 2)
-
-| Property | Value |
-|---|---|
-| **Required version** | 4.3.0 pre-built for Apache Hadoop |
-| **Official download page** | https://spark.apache.org/downloads.html |
-| **Direct download** | Select: Spark 4.3.0 → Pre-built for Apache Hadoop → Mirror link (.tgz) |
-| **Approximate size** | ~400 MB compressed; ~600 MB extracted |
-| **License** | Apache 2.0 |
-| **Compatibility** | Java 17/21/25, Scala 2.13, Python 3.11+ (documented in official overview) |
-
-**Installation steps:**
-1. Download the `.tgz` archive from the official mirror.
-2. Extract using 7-Zip or similar to a path **without spaces**, e.g., `C:\spark\spark-4.3.0-bin-hadoop3`.
-3. Set `SPARK_HOME` and add to PATH (see [Section 5](#5-environment-variable-configuration)).
-
-**Official documentation:** https://spark.apache.org/docs/4.3.0/
-
-**Verification:**
-```powershell
-spark-submit --version
-spark-shell       # Should launch Scala REPL with Spark context
-```
-
----
-
-### Step 4a: Hadoop Windows Binaries — winutils.exe (Phase 2)
-
-| Property | Value |
-|---|---|
-| **Required for** | Spark on Windows (filesystem operations) |
-| **Source** | Community-maintained; no official Apache Windows binary |
-| **Repository** | https://github.com/cdarlint/winutils |
-| **Required files** | `winutils.exe`, `hadoop.dll` matching Hadoop 3.x |
-
-**Installation steps:**
-1. Create directory `C:\hadoop\bin` (no spaces in path).
-2. Download `winutils.exe` and `hadoop.dll` from the repository's `hadoop-3.3.6/bin/` folder (or the latest 3.x matching Spark's bundled Hadoop).
-3. Place both files in `C:\hadoop\bin`.
-4. Set `HADOOP_HOME` and add to PATH (see [Section 5](#5-environment-variable-configuration)).
-
-> [!NOTE]
-> These are community-compiled binaries. Verify the source repository's provenance. The official Hadoop project does not distribute Windows `.exe` files.
-
-**Verification:**
-```powershell
-winutils.exe -version
-```
-
----
-
-### Step 5: PyTorch with CUDA Support (Phase 3)
-
-| Property | Value |
-|---|---|
-| **Required version** | ≥ 2.7.0 with CUDA ≥ 12.8 (must include `sm_120` for RTX 5050) |
-| **Recommended** | Latest stable (currently ~2.15.x) with CUDA 13.2 index |
-| **Official selector** | https://pytorch.org/get-started/locally/ |
-| **Previous versions** | https://pytorch.org/get-started/previous-versions/ |
-| **Release/CUDA matrix** | https://github.com/pytorch/pytorch/blob/main/RELEASE.md |
-| **Approximate size** | ~2.5–3.5 GB (torch + CUDA runtime libraries) |
-| **License** | BSD-3-Clause |
-
-**Installation command** (run inside activated `.venv`):
-```powershell
-# Visit https://pytorch.org/get-started/locally/ and select:
-#   Stable → Windows → Pip → Python → CUDA 13.x
-# The generated command will be similar to:
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu132
-```
-
-> [!IMPORTANT]
-> **Before running this command:**
-> 1. Activate the `.venv` from Step 2.
-> 2. Verify the exact CUDA index URL from the official selector page at installation time.
-> 3. The RTX 5050 (compute capability 12.0 / Blackwell) requires `sm_120` kernel support. Older CUDA 12.4 builds will **not** work.
-> 4. A full CUDA Toolkit installation (`nvcc`) is **not required** for prebuilt PyTorch wheels.
-> 5. `torchvision` and `torchaudio` are not strictly needed for this text-only project but are small relative to `torch`.
-
-**Verification:**
-```python
-import torch
-print("PyTorch:", torch.__version__)
-print("CUDA available:", torch.cuda.is_available())
-print("CUDA version:", torch.version.cuda)
-print("GPU:", torch.cuda.get_device_name(0))
-print("Arch list:", torch.cuda.get_arch_list())  # Must contain sm_120
-x = torch.randn(8, 8, device="cuda")
-y = torch.randn(8, 8, device="cuda")
-z = x @ y
-print("CUDA tensor operation:", z.shape, z.device)
-torch.cuda.synchronize()
-print("Peak VRAM:", torch.cuda.max_memory_allocated() / 1024**2, "MiB")
-```
-
----
-
-### Step 6: PostgreSQL Server (Phase 0 preparation / Phase 9 use)
-
-| Property | Value |
-|---|---|
-| **Required version** | PostgreSQL 17.x stable or 18.x (if GA and stable) |
-| **Official download** | https://www.postgresql.org/download/windows/ |
-| **Installer** | EDB Interactive Installer (includes pgAdmin + StackBuilder) |
-| **Approximate size** | ~300 MB installer; ~200 MB installed |
-| **License** | PostgreSQL License (permissive) |
-| **Default port** | 5432 |
-
-**Installation notes:**
-- Use the EDB installer wizard.
-- Set a **superuser password** during installation — record it securely.
-- Keep the default port `5432` and locale.
-- The installer adds `psql` and `pg_config` to PATH via its bin directory.
-- pgAdmin (included) provides a GUI management tool.
-
-**Verification:**
-```powershell
-psql --version
-pg_config --version
-# Test connection:
-psql -U postgres -c "SELECT version();"
-```
-
----
-
-### Step 6a: pgvector Extension for PostgreSQL (Phase 9)
-
-| Property | Value |
-|---|---|
-| **Required version** | 0.8.x (matching installed PostgreSQL major) |
-| **Source** | https://github.com/pgvector/pgvector |
-| **Build requirement** | Visual Studio C++ Build Tools with `nmake` |
-| **License** | PostgreSQL License |
-
-**Prerequisites for building pgvector:**
-1. **Visual Studio Build Tools** with "Desktop development with C++" workload.
-   - Download: https://visualstudio.microsoft.com/downloads/ → "Build Tools for Visual Studio"
-   - Select the **"Desktop development with C++"** workload during installation.
-   - Size: ~3–6 GB.
-
-**Build and install steps** (from x64 Native Tools Command Prompt for VS, run as Administrator):
-```cmd
-set "PGROOT=C:\Program Files\PostgreSQL\17"
-cd %TEMP%
-git clone --branch v0.8.0 https://github.com/pgvector/pgvector.git
-cd pgvector
-nmake /F Makefile.win
-nmake /F Makefile.win install
-```
-
-**Verification (in psql):**
-```sql
-CREATE EXTENSION vector;
-SELECT extversion FROM pg_extension WHERE extname = 'vector';
--- Test round-trip:
-CREATE TABLE test_vec (id serial PRIMARY KEY, v vector(3));
-INSERT INTO test_vec (v) VALUES ('[1,2,3]');
-SELECT * FROM test_vec ORDER BY v <-> '[3,2,1]' LIMIT 1;
-DROP TABLE test_vec;
-```
-
-> [!NOTE]
-> **Alternative:** If building from source is problematic, Docker can provide a pre-built pgvector image: `pgvector/pgvector:pg17`. This requires Docker Desktop (see [Optional Software](#3-optional-software)).
-
----
-
-### Step 7: Node.js (Phase 10)
-
-| Property | Value |
-|---|---|
-| **Required version** | Node.js 24.x LTS (currently 24.22.2) |
-| **Official download** | https://nodejs.org/en/download/ |
-| **Direct installer** | https://nodejs.org/dist/v24.22.2/node-v24.22.2-x64.msi |
-| **Approximate size** | ~35 MB installer; ~80 MB installed |
-| **License** | MIT |
-| **npm** | Bundled with Node.js |
-
-**Installation notes:**
-- Use the `.msi` installer; it adds `node` and `npm` to PATH.
-- Accept defaults during installation.
-- **Timing:** Not needed until Phase 10 (frontend development). Install it then to avoid premature dependency.
-
-**Verification:**
-```powershell
-node --version    # Should show v24.x.x
-npm --version     # Should show 10.x or higher
-```
-
----
-
-## 3. Optional Software
-
-These are **not required** for the core project but may be helpful.
-
-| Software | Purpose | When Needed | Download |
+| Python | 3.11.9 x64 at C:\Users\bharg\AppData\Local\Programs\Python\Python311\python.exe | Keep; use the root .venv explicitly |
+| Root project .venv | Python 3.11.9; no scientific, pytest, NLP or backend packages detected | Keep; standard-library validators can run now |
+| Python launcher | Bare py selects 3.14.6 | Do not use it to select this project's interpreter |
+| Preserved temp/.venv | Python 3.12.10 | Preserve; do not reuse, clear or upgrade it |
+| Java on PATH | Adoptium Temurin 21.0.12.1+1-LTS | Keep this installed JDK |
+| JAVA_HOME | Points to a different Coursier-cached JDK 21 patch | Select the project JDK in configuration/child processes |
+| NVIDIA | RTX 5050 Laptop,8151 MiB,capability 12.0; driver 621.01 | Keep driver; no automatic driver/CUDA change |
+| Git / VS Code | Previously observed 2.56.0.windows.4 / 1.143.1 | Keep; no duplicate installation |
+| SBT / Spark | Not found in checked PATH/install locations | Manual Phase 2 prerequisite |
+| PyTorch CUDA | Absent from root .venv | Manual Phase 3 prerequisite; operation unverified |
+| PostgreSQL / pgvector | Server/extension not verified | Manual Phase 9 prerequisite |
+| Node / npm | Not found in checked locations | Deferred to Phase 10 |
+| Docker / WSL | Not prepared in the audit | Optional alternative deployment, not a prerequisite |
+
+The separate Python 3.14 installation's CPU-only torch import failed in the earlier
+audit. That does not establish that Python 3.14 is universally incompatible; it
+establishes that the inspected installation is unsuitable for this project's
+selected Python 3.11/CUDA environment.
+
+The available Foundation checks and standard-library Phase 1 validators do not
+require pandas, Spark, CUDA, PostgreSQL or Node. Missing later tools remain explicit
+phase blockers. A passing Foundation profile does not certify the full application.
+
+## 2. Mandatory software, exact versions and official sources
+
+Keep already installed working tools. Install each missing component only when its
+phase needs it. Choose storage locations explicitly; none are moved automatically.
+
+| Software | Selected version | Needed by | Official download/source |
 |---|---|---|---|
-| **Docker Desktop** | Alternative for PostgreSQL+pgvector, possible future containerization | Only if native pgvector build fails | https://www.docker.com/products/docker-desktop/ |
-| **Visual Studio Build Tools** | Required only for building pgvector from source | Phase 9, only if using native pgvector | https://visualstudio.microsoft.com/downloads/ |
-| **CUDA Toolkit** | Only if a custom CUDA extension needs compilation | Not needed for prebuilt PyTorch wheels | https://developer.nvidia.com/cuda-downloads |
-| **7-Zip** | Extracting `.tgz` Spark archive | Phase 2 setup | https://www.7-zip.org/download.html |
-| **JupyterLab** | Interactive notebooks | Phase 1+ (installed via pip in .venv) | `pip install jupyterlab` |
-| **WSL** | Linux subsystem alternative | Only if Docker/pgvector build requires it | Windows Features |
-| **Postman** | API testing GUI | Phase 9+ backend testing | https://www.postman.com/downloads/ |
-| **pgAdmin** | PostgreSQL GUI management | Bundled with PostgreSQL installer | N/A |
-| **DBeaver** | Alternative database GUI | Optional | https://dbeaver.io/download/ |
+| Windows x64 | Existing Windows11 installation | All phases | Existing OS; [Microsoft Windows](https://www.microsoft.com/software-download/windows11) |
+| Windows PowerShell | Existing Windows PowerShell 5.1 | Foundation/scripts | Built into Windows; [Microsoft documentation](https://learn.microsoft.com/powershell/scripting/windows-powershell/overview) |
+| Python x64 | **3.11.9**, existing | Phase 0 onward | [Python 3.11.9 release](https://www.python.org/downloads/release/python-3119/) |
+| JDK x64 | **Temurin 21.0.12.1+1**, existing | JVM checks/Phase 2 | [Adoptium JDK 21 releases](https://adoptium.net/temurin/releases/?version=21&os=windows&arch=x64&package=jdk) |
+| Git | Existing **2.56.0.windows.4** | Source control | [Git for Windows](https://git-scm.com/download/win) |
+| VS Code | Existing **1.143.1** | Development | [VS Code Windows](https://code.visualstudio.com/download) |
+| SBT | **1.10.7** | Phase 2 builds | [Official release/MSI](https://github.com/sbt/sbt/releases/tag/v1.10.7), [installation guide](https://www.scala-sbt.org/1.x/docs/Installing-sbt-on-Windows.html) |
+| Apache Spark | **4.3.0**, Scala 2.13 build | Phase 2 | [Apache downloads](https://spark.apache.org/downloads.html), [versioned documentation](https://spark.apache.org/docs/4.3.0/) |
+| Scala compiler | **2.13.18**, managed by the approved SBT/Spark build | Phase 2 | [Scala 2.13.18 release](https://github.com/scala/scala/releases/tag/v2.13.18); no separate compiler installation needed |
+| Hadoop client libraries | **3.5.0** in the inspected Spark 4.3.0 source baseline | Phase 2 | Supplied by Spark distribution/dependencies; [tagged Spark POM](https://raw.githubusercontent.com/apache/spark/v4.3.0/pom.xml) |
+| PyTorch CUDA | **2.14.1+cu132**, CPython3.11 Windows x64 | Phase 3 | [Official wheel index](https://download.pytorch.org/whl/cu132/torch/), [published installation commands](https://pytorch.org/get-started/previous-versions/) |
+| PostgreSQL x64 | **18.6** candidate | Phase 9 | [Official Windows installers](https://www.postgresql.org/download/windows/), [supported version table](https://www.postgresql.org/support/versioning/) |
+| pgvector server extension | **0.8.7**, built for PostgreSQL 18 x64 | Phase 9 | [Official tagged source](https://github.com/pgvector/pgvector/tree/v0.8.7), [Windows instructions](https://raw.githubusercontent.com/pgvector/pgvector/v0.8.7/README.md) |
+| Node.js x64 | **24.22.2 LTS** | Phase 10 | [Official release/MSI and checksums](https://nodejs.org/download/release/v24.22.2/) |
+| npm | Version bundled with the selected Node 24.22.2 installer | Phase 10 | Same Node installer; record npm --version after installation; no separate npm upgrade |
 
-> [!TIP]
-> Visual Studio Build Tools become mandatory only if you choose the native pgvector build path. If you use Docker for PostgreSQL+pgvector instead, you can skip the Build Tools entirely.
+Spark 4.3.0's tagged POM specifies Scala 2.13.18 and Hadoop 3.5.0. Inspect the actual
+downloaded distribution's RELEASE/jars before pinning its final build metadata.
+Match Spark versions across distribution and Scala dependencies. Do not mix the
+legacy Spark 3.5.7/Scala 2.12.18 project with this build. [Spark build metadata](https://raw.githubusercontent.com/apache/spark/v4.3.0/pom.xml)
 
----
+The exact Windows torch wheel listing includes
+torch-2.14.1+cu132-cp311-cp311-win_amd64.whl. The tagged release matrix lists
+CUDA 13.2.1 Windows Blackwell12.0 support. This establishes an available candidate;
+a real local CUDA tensor operation remains mandatory. Install only torch for this
+text project. [Tagged PyTorch compatibility matrix](https://raw.githubusercontent.com/pytorch/pytorch/v2.14.1/RELEASE.md)
 
-## 4. Python Package Dependencies
+## 3. Optional and conditional software
 
-All Python packages will be installed into the project `.venv` (Step 2). They are organized by phase/group.
-
-### Group A — Foundation & Data (Phase 0–1)
-
-Install first, immediately after creating the venv:
-
-```
-numpy>=2.1,<3.0
-pandas>=2.1,<3.0
-scikit-learn>=1.5,<2.0
-pyarrow>=15.0
-PyYAML>=6.0
-pytest>=8.0
-httpx>=0.27
-matplotlib>=3.9
-seaborn>=0.13
-python-dotenv>=1.0
-```
-
-### Group B — PyTorch & NLP (Phase 3–6)
-
-Install after PyTorch (Step 5) is working:
-
-```
-transformers>=4.45
-datasets>=3.0
-accelerate>=1.0
-tokenizers>=0.20
-safetensors>=0.4
-evaluate>=0.4
-sentence-transformers>=3.0
-seqeval>=1.2
-rouge-score>=0.1
-```
-
-### Group C — Backend API & Database (Phase 9)
-
-```
-fastapi>=0.115
-uvicorn[standard]>=0.32
-sqlalchemy>=2.0
-psycopg[binary]>=3.2
-pgvector>=0.3
-alembic>=1.14
-pydantic>=2.10
-pydantic-settings>=2.6
-python-jose[cryptography]>=3.3
-passlib[bcrypt]>=1.7
-python-multipart>=0.0.12
-```
-
-### Group D — Frontend (Phase 10, via npm)
-
-```json
-{
-  "dependencies": {
-    "next": "^16.0",
-    "react": "^19.0",
-    "react-dom": "^19.0"
-  },
-  "devDependencies": {
-    "typescript": "^5.6",
-    "tailwindcss": "^4.0",
-    "@types/react": "^19.0",
-    "@types/node": "^22.0"
-  }
-}
-```
-
-### Group E — Optional / Later Phase
-
-```
-bertopic>=0.16          # Phase 5 only, check Windows wheel
-umap-learn>=0.5
-hdbscan>=0.8
-faster-whisper>=1.0     # Phase 11 only, separate CUDA/CTranslate2 check
-pyspark==4.3.0          # Optional for notebooks; Scala is mandatory
-```
-
-> [!IMPORTANT]
-> **Do not install all groups at once.** Install Group A first, verify, then Group B after PyTorch works, etc. Each group's exact pins will be resolved at installation time through `pip install` with constraints.
-
----
-
-## 5. Environment Variable Configuration
-
-### Variables to Set (User or System level)
-
-| Variable | Value | Purpose |
+| Item | Status and version policy | Official source |
 |---|---|---|
-| `JAVA_HOME` | `C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot` | JDK root for SBT, Spark |
-| `SPARK_HOME` | `C:\spark\spark-4.3.0-bin-hadoop3` (adjust to your extraction path) | Apache Spark distribution root |
-| `HADOOP_HOME` | `C:\hadoop` | Hadoop winutils location |
-| `PYSPARK_PYTHON` | `D:\BDA_TA\.venv\Scripts\python.exe` | PySpark Python interpreter |
-| `TMDB_API_KEY` | *(your TMDB API key)* | TMDB metadata access (set in `.env`, not system-wide) |
+| Visual Studio C++ Build Tools | Conditional requirement if native pgvector compilation is selected; x64 MSVC/nmake plus matching PostgreSQL 18 headers. Select and record the exact supported toolset/build before installation | [Microsoft C++ command-line tools](https://learn.microsoft.com/cpp/build/building-on-the-command-line?view=msvc-170), [Build Tools downloads](https://visualstudio.microsoft.com/downloads/) |
+| Docker Desktop / WSL | Optional alternative for PostgreSQL+pgvector; no version selected or installation required now. Exact image/version and resource cost need approval before adopting this route | [Docker Windows](https://docs.docker.com/desktop/setup/install/windows-install/), [Microsoft WSL](https://learn.microsoft.com/windows/wsl/install) |
+| PowerShell 7 | Optional; scripts are compatible with the built-in PowerShell 5.1. Avoid duplicate installation unless needed | [Microsoft PowerShell releases](https://github.com/PowerShell/PowerShell/releases) |
+| Full CUDA Toolkit | Not required for ordinary prebuilt torch wheels. Select an exact Toolkit only if an approved extension actually needs compilation | [NVIDIA Toolkit](https://developer.nvidia.com/cuda-downloads) |
+| Hadoop Windows native binaries | Conditional on a reproduced local Spark filesystem/Parquet failure; no binary version or download is approved now | [Apache Hadoop 3.5.0 source/build instructions](https://github.com/apache/hadoop/blob/rel/release-3.5.0/BUILDING.txt) |
+| BERTopic | Candidate **0.17.3**, Phase 5 exploration; inspect transitive Windows wheels and memory before installation | [Official PyPI release](https://pypi.org/project/bertopic/0.17.3/) |
+| Offline speech | faster-whisper candidate **1.2.1**, Phase 11; CPU-first. Its CTranslate2/CUDA/cuDNN compatibility is separate from torch | [Official PyPI release](https://pypi.org/project/faster-whisper/1.2.1/), [project runtime requirements](https://github.com/SYSTRAN/faster-whisper) |
+| PySpark | Optional **4.3.0** for a justified notebook exercise; Scala remains the actual BDA implementation | [Official PyPI release](https://pypi.org/project/pyspark/4.3.0/) |
 
-### PATH Additions (append to existing PATH)
+No mandatory Postman, second database GUI, Conda, standalone Scala compiler,
+cloud GPU, paid AI API or archive utility is introduced. Windows tar can extract
+the Spark .tgz after manual download; a preferred archive GUI is the user's choice.
 
-Add these entries **in order** to your User or System PATH:
+### Windows Hadoop decision
 
-```
-%JAVA_HOME%\bin
-%SPARK_HOME%\bin
-%HADOOP_HOME%\bin
-```
+Do not automatically fetch community winutils.exe or hadoop.dll. A generic
+"Hadoop 3.x" match is insufficient, and the old suggestion of Hadoop 3.3.6 does not
+match the inspected Hadoop 3.5.0 baseline.
 
-Node.js, SBT, PostgreSQL, and Git installers add themselves to PATH automatically during installation.
+First install the approved Spark distribution manually, then run a tiny local
+Scala filesystem/Parquet read/write test in Phase 2 after build dependencies are
+authorized. Record the exact error if it fails. Only then decide whether a trusted
+matching native build is needed, verify its provenance/checksum/architecture,
+and obtain approval for that dependency. Missing Hadoop native warnings alone
+do not prove that every required local operation is broken.
 
-### How to Set Environment Variables on Windows 11
+## 4. Python and frontend dependency candidates
 
-1. Press `Win + S`, search for **"Environment Variables"**.
-2. Click **"Edit the system environment variables"**.
-3. Click **"Environment Variables..."** button.
-4. Under **User variables** (preferred) or **System variables**:
-   - Click **"New..."** to add a new variable.
-   - Click on **"Path"** → **"Edit..."** → **"New"** to add PATH entries.
-5. Click **OK** on all dialogs.
-6. **Restart any open terminals** for changes to take effect.
+Every listed version is a direct candidate. Transitive constraints, Windows
+wheels, imports and representative operations must pass after manual installation
+before recording a tested lock. Do not bulk-install every phase.
 
-### Project-level `.env` File
+### Phase 0/1: no third-party dependency for current validators
 
-Application secrets go in `.env` (never committed to Git):
+The current inventory/CSV/JSON/mapping validation and unittest suites use Python's
+standard library. requirements/phase1.txt records this. Run the root interpreter
+directly. requirements-dev.txt offers pytest 8.4.2 as an optional runner.
 
-```env
-# .env.example — copy to .env and fill values
-DATABASE_URL=postgresql+psycopg://postgres:YOUR_PASSWORD@localhost:5432/cinescope
-TMDB_API_KEY=your_tmdb_api_key_here
-SECRET_KEY=generate_a_random_secret_key
-DEBUG=false
-```
+For later EDA/classical baselines, requirements/analysis.txt contains:
 
----
+| Package | Pin | Official release |
+|---|---|---|
+| numpy | 2.2.6 | [PyPI](https://pypi.org/project/numpy/2.2.6/) |
+| pandas | 2.3.3 | [PyPI](https://pypi.org/project/pandas/2.3.3/) |
+| scikit-learn | 1.7.2 | [PyPI](https://pypi.org/project/scikit-learn/1.7.2/) |
+| pyarrow | 22.0.0 | [PyPI](https://pypi.org/project/pyarrow/22.0.0/) |
+| PyYAML | 6.0.3 | [PyPI](https://pypi.org/project/PyYAML/6.0.3/) |
+| matplotlib | 3.10.7 | [PyPI](https://pypi.org/project/matplotlib/3.10.7/) |
+| seaborn | 0.13.2 | [PyPI](https://pypi.org/project/seaborn/0.13.2/) |
+| python-dotenv | 1.2.1 | [PyPI](https://pypi.org/project/python-dotenv/1.2.1/) |
+| pytest | 8.4.2 | [PyPI](https://pypi.org/project/pytest/8.4.2/) |
+| httpx | 0.28.1, later HTTP tests | [PyPI](https://pypi.org/project/httpx/0.28.1/) |
+| JupyterLab | 4.6.4, notebooks on demand | [PyPI](https://pypi.org/project/jupyterlab/4.6.4/) |
 
-## 6. Verification Commands
+The optional manual commands, when the user chooses this group, are:
 
-Run these after each installation step. All commands assume PowerShell.
+~~~powershell
+.\.venv\Scripts\python.exe -m pip install -r .\requirements\analysis.txt
+.\.venv\Scripts\python.exe -m pip install -r .\requirements-dev.txt
+.\.venv\Scripts\python.exe -m pip check
+~~~
 
-### Full Verification Script
+Do not run these automatically. Current standard-library tests need neither command.
 
-```powershell
-# --- Step 1: Java ---
-Write-Host "=== Java ===" -ForegroundColor Cyan
-java -version
-javac -version
-Write-Host "JAVA_HOME: $env:JAVA_HOME"
+### Phase 3–6: NLP candidates
 
-# --- Step 2: Python venv ---
-Write-Host "`n=== Python ===" -ForegroundColor Cyan
+Install torch separately using its official CUDA index before this group.
+
+| Package | Pin | Official release |
+|---|---|---|
+| transformers | 4.57.3 | [PyPI](https://pypi.org/project/transformers/4.57.3/) |
+| datasets | 4.4.1 | [PyPI](https://pypi.org/project/datasets/4.4.1/) |
+| accelerate | 1.11.0 | [PyPI](https://pypi.org/project/accelerate/1.11.0/) |
+| sentence-transformers | 5.1.2 | [PyPI](https://pypi.org/project/sentence-transformers/5.1.2/) |
+| tokenizers | 0.22.1 | [PyPI](https://pypi.org/project/tokenizers/0.22.1/) |
+| safetensors | 0.6.2 | [PyPI](https://pypi.org/project/safetensors/0.6.2/) |
+| huggingface-hub | 0.36.0 | [PyPI](https://pypi.org/project/huggingface-hub/0.36.0/) |
+| sentencepiece | 0.2.1 | [PyPI](https://pypi.org/project/sentencepiece/0.2.1/) |
+| evaluate | 0.4.6 | [PyPI](https://pypi.org/project/evaluate/0.4.6/) |
+| seqeval | 1.2.2, Phase 4 span evaluation | [PyPI](https://pypi.org/project/seqeval/1.2.2/) |
+| rouge-score | 0.1.2, Phase 5 summaries | [PyPI](https://pypi.org/project/rouge-score/0.1.2/) |
+| bert-score | 0.3.13, Phase 5 reference evaluation | [PyPI](https://pypi.org/project/bert-score/0.3.13/) |
+
+Sentence Transformers 5.1.2 declares Transformers>=4.41,<5. Transformers 4.57.3
+declares Hub>=0.34,<1 and tokenizers>=0.22,<=0.23. Datasets 4.4.1 requires
+PyArrow>=21 and fsspec<=2025.10.0; retain that fsspec constraint during resolution.
+These declared ranges support the proposed direct pins; they do not replace an
+installed resolver/import test. [Sentence Transformers metadata](https://raw.githubusercontent.com/UKPLab/sentence-transformers/v5.1.2/pyproject.toml), [Transformers metadata](https://raw.githubusercontent.com/huggingface/transformers/v4.57.3/setup.py), [Datasets metadata](https://raw.githubusercontent.com/huggingface/datasets/4.4.1/setup.py)
+
+The precise manual torch command for the selected candidate is:
+
+~~~powershell
+.\.venv\Scripts\python.exe -m pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cu132
+~~~
+
+The installed version should identify the CUDA build, such as 2.14.1+cu132.
+No torchvision or torchaudio is needed. No model checkpoint is downloaded by
+this guide or by an environment verification command.
+
+The candidate manifests requirements/requirements-nlp.txt and
+requirements/requirements-backend.txt now record these direct pins. Their
+presence is not installation approval or a runtime-tested lockfile. Use the
+NLP/backend groups only at their respective approved phase after manual
+prerequisite verification and data/model decisions.
+
+### Phase 9: backend and database adapters
+
+| Package | Pin | Official release |
+|---|---|---|
+| fastapi | 0.141.1 | [PyPI](https://pypi.org/project/fastapi/0.141.1/) |
+| starlette | 1.3.1 | [PyPI](https://pypi.org/project/starlette/1.3.1/) |
+| uvicorn | 0.35.0 | [PyPI](https://pypi.org/project/uvicorn/0.35.0/) |
+| SQLAlchemy | 2.0.44 | [PyPI](https://pypi.org/project/SQLAlchemy/2.0.44/) |
+| psycopg[binary] | 3.2.12 | [PyPI](https://pypi.org/project/psycopg/3.2.12/) |
+| pgvector, Python adapter | 0.4.1 | [PyPI](https://pypi.org/project/pgvector/0.4.1/) |
+| alembic | 1.17.1 | [PyPI](https://pypi.org/project/alembic/1.17.1/) |
+| pydantic | 2.12.4 | [PyPI](https://pypi.org/project/pydantic/2.12.4/) |
+| pydantic-settings | 2.12.0 | [PyPI](https://pypi.org/project/pydantic-settings/2.12.0/) |
+| PyJWT | 2.10.1 | [PyPI](https://pypi.org/project/PyJWT/2.10.1/) |
+| pwdlib[argon2] | 0.3.0 | [PyPI](https://pypi.org/project/pwdlib/0.3.0/) |
+| python-multipart | 0.0.20 | [PyPI](https://pypi.org/project/python-multipart/0.0.20/) |
+
+The old FastAPI 0.115.14 restriction excluded later Starlette multipart fixes.
+The proposed newer FastAPI/Starlette pair needs complete resolution and endpoint
+tests in Phase 9. Starlette 1.3.1 addresses the documented form-parsing issue;
+httpx 0.28.1 TestClient support has a deprecation path. Reassess test dependencies
+before implementation instead of silently upgrading shared packages.
+[FastAPI dependency metadata](https://raw.githubusercontent.com/fastapi/fastapi/0.141.1/pyproject.toml),
+[Starlette advisory](https://github.com/Kludex/starlette/security/advisories/GHSA-82w8-qh3p-5jfq),
+[TestClient implementation](https://raw.githubusercontent.com/Kludex/starlette/1.3.1/starlette/testclient.py)
+
+The Python pgvector package does not install the PostgreSQL server extension.
+Both components are needed in Phase 9.
+
+### Phase 10: frontend candidates
+
+| Package | Exact candidate | Official source |
+|---|---|---|
+| next | 16.4.5 | [Versioned package](https://www.npmjs.com/package/next/v/16.4.5) |
+| react / react-dom | 19.3.0 each | [React versions](https://react.dev/versions), [React package](https://www.npmjs.com/package/react/v/19.3.0), [React DOM package](https://www.npmjs.com/package/react-dom/v/19.3.0) |
+| typescript | 5.9.3 | [Versioned package](https://www.npmjs.com/package/typescript/v/5.9.3) |
+| tailwindcss / @tailwindcss/postcss | 4.1.17 each | [Tailwind](https://www.npmjs.com/package/tailwindcss/v/4.1.17), [PostCSS plugin](https://www.npmjs.com/package/@tailwindcss/postcss/v/4.1.17) |
+| postcss | 8.5.23 | [Versioned package](https://www.npmjs.com/package/postcss/v/8.5.23) |
+| recharts | 3.3.0 | [Versioned package](https://www.npmjs.com/package/recharts/v/3.3.0) |
+| react-is | 19.3.0, aligned with React | [Versioned package](https://www.npmjs.com/package/react-is/v/19.3.0) |
+
+Next16.4.5 declares Node>=20.9 and accepts React19; the selected Node 24 LTS
+candidate meets that declaration. Exact @types packages and test tools are
+resolved with the actual Phase 10 application and lockfile. Install Node/npm and
+generate package.json/package-lock only at that phase. No frontend dependency
+installation or scaffolding command is part of the current foundation.
+[Next manifest](https://raw.githubusercontent.com/vercel/next.js/v16.4.5/packages/next/package.json)
+
+## 5. Installation order and manual instructions
+
+1. **Verify the existing Python/JDK and resources.** Run the Foundation profile
+   below. Root .venv is already present; do not recreate it. Confirm free space
+   and available memory before any substantial installation/job.
+2. **Run standard-library Phase 1 validators/tests.** No package installation is
+   needed. Human labels, consent, source provenance and mapping decisions remain
+   separate gates even when raw MovieLens/IMDb files exist.
+3. **Add analysis/test/notebook packages only when needed.** The user chooses
+   and runs the selected manual commands. Verify pip check, imports and a small
+   representative operation; record final resolved versions.
+4. **Prepare SBT/Spark before Phase 2.** Install the SBT 1.10.7 Windows MSI and
+   manually download the Spark 4.3.0 distribution from Apache. Verify its
+   published archive checksum/signature. Extract to a user-approved location
+   without spaces, such as C:\spark\spark-4.3.0-bin-hadoop3. Do not move existing
+   data or change storage automatically. SBT manages Scala; no duplicate
+   standalone compiler is required.
+5. **Authorize dependency resolution separately.** Merely invoking SBT/Scala
+   can download launcher/compiler/dependency files. First verify local installer
+   metadata and launcher location. Once the user approves those downloads,
+   resolve the pinned Phase 2 build and run a tiny Scala/Parquet test. Save
+   execution evidence and decide whether Windows native Hadoop support is needed.
+6. **Install the approved CUDA torch wheel before Phase 3.** Use only the explicit
+   root Python 3.11 environment and official cu132 index. Run the tiny CUDA test
+   before any permitted checkpoint download or training. Keep the working
+   NVIDIA driver unless actual evidence requires an approved change.
+7. **Add NLP groups by task.** Review licenses and local artifact locations
+   separately before the user supplies/downloads pretrained weights. Do not
+   download datasets or weights as a side effect of verification.
+8. **Prepare PostgreSQL 18.6+pgvector0.8.7 for Phase 9.** Use the official Windows
+   installer, a securely stored administrator password and an explicit data
+   location/port 5432. Do not assume the installer modifies PATH. The application
+   later uses a dedicated limited role, not the postgres superuser.
+9. **Select native pgvector or an approved alternative.** For native Windows,
+   install the necessary x64 C++ tools manually; download the tagged pgvector
+   source and follow its Windows instructions using PostgreSQL 18 headers.
+   Run nmake only from the approved x64 tools prompt after source/toolchain review.
+   Enabling vector in the selected application database is a Phase 9 setup action,
+   not a read-only health check. Docker/WSL remains an alternative requiring a
+   separate deployment/resource decision.
+10. **Install Node 24.22.2 in Phase 10.** Use the official Windows x64 MSI and its
+    checksums. Record bundled npm version. Pin package.json and commit a reviewed
+    lockfile after authorized installation; never commit node_modules.
+11. **Add optional speech in Phase 11.** Start CPU-only with approved cached
+    weights; validate decoding/runtime dependencies and keep text input.
+
+If a missing installation blocks a required phase, stop at that gate and report
+the exact item. Do not fill the gap by changing stacks or fabricating outputs.
+
+## 6. Environment variables and PATH
+
+Current project selection is recorded in configs/environment.json. Verification
+uses the chosen JDK directly; it does not modify global JAVA_HOME, PATH or drivers.
+
+Selected JDK:
+
+~~~text
+C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot
+~~~
+
+Verify it directly:
+
+~~~powershell
+& 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot\bin\java.exe' -version
+& 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot\bin\javac.exe' -version
+~~~
+
+For a manually approved SBT/Spark command, select the JDK in that terminal only:
+
+~~~powershell
+$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot'
+$projectJavaBin = Join-Path $env:JAVA_HOME 'bin'
+if (($env:Path -split ';') -notcontains $projectJavaBin) {
+    $env:Path = $projectJavaBin + ';' + $env:Path
+}
+~~~
+
+This affects that terminal and its children. It does not call setx or edit
+Windows User/System environment settings. A plus sign in an existing JDK path
+is not itself proof of failure; the observed problem is inconsistent selection.
+
+After manually extracting Spark to the chosen location, the user can set
+SPARK_HOME in the approved terminal and invoke its absolute .cmd path:
+
+~~~powershell
+$env:SPARK_HOME = 'C:\spark\spark-4.3.0-bin-hadoop3'
+& (Join-Path $env:SPARK_HOME 'bin\spark-submit.cmd') --version
+~~~
+
+No HADOOP_HOME is required by this guide unless the conditional native-dependency
+decision establishes a need. PYSPARK_PYTHON is relevant only for optional PySpark;
+Scala jobs do not require a Python interpreter environment variable.
+
+PostgreSQL and Node can be invoked through their installed absolute paths if
+PATH discovery fails. Check actual paths instead of installing a second copy.
+
+.env.example contains blank secret fields and local configuration. Copy it
+manually only when needed. Keep .env private. Do not use a superuser connection
+URL in the frontend, print credentials or dump the full environment. No TMDB
+request or key is required for current validation work.
+
+## 7. Verification commands and expected evidence
+
+These commands inspect local software. No command below installs a package,
+resolves an SBT build, downloads a model or starts the application.
+
+### Python, configuration and resources
+
+~~~powershell
 .\.venv\Scripts\python.exe --version
-.\.venv\Scripts\python.exe -c "import sys; print('Executable:', sys.executable)"
-.\.venv\Scripts\pip.exe --version
+.\.venv\Scripts\python.exe -c "import sys; print(sys.executable); print(sys.prefix != sys.base_prefix)"
+.\.venv\Scripts\python.exe -m pip --version
+.\.venv\Scripts\python.exe -m pip check
+.\scripts\verify_environment.ps1 -Profile Foundation -Json
+.\scripts\verify_environment.ps1 -Profile Data -Json
+~~~
 
-# --- Step 3: SBT ---
-Write-Host "`n=== SBT ===" -ForegroundColor Cyan
-sbt --version
+Expected: selected Python 3.11.9/root .venv, resource snapshots and truthful
+pass/missing/deferred checks. An empty environment can pass pip check; that
+does not mean the project packages or native/GPU libraries work.
 
-# --- Step 4: Spark ---
-Write-Host "`n=== Spark ===" -ForegroundColor Cyan
-Write-Host "SPARK_HOME: $env:SPARK_HOME"
-Write-Host "HADOOP_HOME: $env:HADOOP_HOME"
-spark-submit --version
+After manually installing analysis packages:
 
-# --- Step 5: PyTorch/CUDA ---
-Write-Host "`n=== PyTorch ===" -ForegroundColor Cyan
-.\.venv\Scripts\python.exe -c @"
-import torch
-print('PyTorch:', torch.__version__)
-print('CUDA available:', torch.cuda.is_available())
-if torch.cuda.is_available():
-    print('CUDA version:', torch.version.cuda)
-    print('GPU:', torch.cuda.get_device_name(0))
-    arch = torch.cuda.get_arch_list()
-    print('Arch list:', arch)
-    has_sm120 = any('sm_120' in a or 'compute_120' in a for a in arch)
-    print('sm_120 support:', has_sm120)
-    x = torch.randn(4, 4, device='cuda')
-    y = x @ x.T
-    torch.cuda.synchronize()
-    print('CUDA tensor test: PASS')
-    print('Peak VRAM:', round(torch.cuda.max_memory_allocated()/1024**2, 1), 'MiB')
-else:
-    print('WARNING: CUDA not available')
-"@
+~~~powershell
+.\scripts\verify_environment.ps1 -Profile Data -CheckImports -Json
+.\.venv\Scripts\python.exe -c "import numpy,pandas,sklearn,pyarrow,yaml; print(numpy.__version__,pandas.__version__,sklearn.__version__,pyarrow.__version__)"
+~~~
 
-# --- Step 6: PostgreSQL ---
-Write-Host "`n=== PostgreSQL ===" -ForegroundColor Cyan
-psql --version
-pg_config --version
+### Java, Git, SBT and Spark
 
-# --- Step 6a: pgvector ---
-Write-Host "`n=== pgvector ===" -ForegroundColor Cyan
-psql -U postgres -c "SELECT extversion FROM pg_extension WHERE extname = 'vector';"
+~~~powershell
+Get-Command java,javac,git -ErrorAction SilentlyContinue
+git --version
+& 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot\bin\java.exe' -version
+& 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot\bin\javac.exe' -version
+Get-Command sbt -ErrorAction SilentlyContinue
+.\scripts\verify_environment.ps1 -Profile Spark -Json
+~~~
 
-# --- Step 7: Node.js ---
-Write-Host "`n=== Node.js ===" -ForegroundColor Cyan
+SBT launcher discovery or an MSI version is installation evidence only. Do not
+run sbt --version, scala, sbt compile or a dependency command merely as an
+unapproved inspection: the launcher may resolve/download software. Compilation
+and a real Spark job are deferred until manual dependency preparation is
+complete. Spark --version uses an already supplied distribution; no fallback
+download/resolution is permitted.
+
+### NVIDIA and CUDA torch
+
+~~~powershell
+nvidia-smi --query-gpu=name,driver_version,memory.total,compute_cap --format=csv,noheader
+.\scripts\verify_environment.ps1 -Profile Nlp -CheckCuda -Json
+~~~
+
+Run the second command after manual CUDA torch installation. It must show the
+actual torch/runtime build, device/capability, architectures, a finite CUDA
+matrix operation and memory. Precision checks establish local FP16/BF16
+support; metadata alone does not. If torch is missing or import fails, the
+result must remain missing/failed.
+
+nvidia-smi's CUDA UMD13.5 is a driver capability, not torch.version.cuda and
+not evidence of an installed full Toolkit. Never infer that torch must use
+exactly 13.5. Verify capability 12.0 and an executed kernel for this GPU.
+[NVIDIA compatibility](https://docs.nvidia.com/deploy/cuda-compatibility/)
+
+### PostgreSQL and pgvector
+
+After manual installation, substitute the actual installation path and
+the dedicated application role/database created in the approved Phase 9 setup:
+
+~~~powershell
+& 'C:\Program Files\PostgreSQL\18\bin\psql.exe' --version
+& 'C:\Program Files\PostgreSQL\18\bin\pg_config.exe' --version
+& 'C:\Program Files\PostgreSQL\18\bin\psql.exe' -X -h 127.0.0.1 -U movie_app -d movie_intelligence -c "SELECT version();"
+& 'C:\Program Files\PostgreSQL\18\bin\psql.exe' -X -h 127.0.0.1 -U movie_app -d movie_intelligence -c "SELECT extversion FROM pg_extension WHERE extname='vector';"
+& 'C:\Program Files\PostgreSQL\18\bin\psql.exe' -X -h 127.0.0.1 -U movie_app -d movie_intelligence -c "SELECT '[1,2,3]'::vector <-> '[3,2,1]'::vector;"
+~~~
+
+The final query tests a vector expression without creating/dropping a table.
+A TCP listener alone does not prove server identity, credentials or extension
+availability. Current health scripts do not create databases or migrations.
+
+### Node/npm and services
+
+Only after Phase 10 manual installation:
+
+~~~powershell
 node --version
 npm --version
+.\scripts\verify_environment.ps1 -Profile Frontend -Json
+~~~
 
-# --- Git (already installed) ---
-Write-Host "`n=== Git ===" -ForegroundColor Cyan
-git --version
+Expected Node v24.22.2; record the bundled npm version. Frontend package imports,
+TypeScript checks and browser tests remain Phase 10 work.
 
-# --- GPU ---
-Write-Host "`n=== GPU ===" -ForegroundColor Cyan
-nvidia-smi --query-gpu=name,driver_version,memory.total,compute_mode -i 0 --format=csv,noheader
-```
+For already running services:
 
----
+~~~powershell
+.\scripts\check_health.ps1 -Json
+.\scripts\check_health.ps1 -CheckDatabase -DatabaseName movie_intelligence -DatabaseUser movie_app -Json
+~~~
 
-## 7. Compatibility Notes
+The database option uses noninteractive read-only SQL and needs an already
+configured credential mechanism. Do not put a password in a command argument.
+No services are started. An unavailable/unverified report is expected before
+backend/frontend/database implementation.
 
-### Validated Compatible Stack
+Optional reports use -OutputPath with a **new file** in an existing workspace
+directory. Protected paths, existing files and raw datasets are rejected.
+Keep actual JSON reports as evidence; do not claim that listing a verification
+command means it passed.
 
-| Component | Version | Compatibility Source |
-|---|---|---|
-| Python | 3.11.9 | Architecture requirement; PyTorch/Spark/Transformers all support 3.11 |
-| JDK | 21 (Temurin) | Spark 4.3.0 docs list Java 17/21/25 |
-| Scala | 2.13.x (SBT-managed) | Spark 4.3.0 requires Scala 2.13; Scala docs confirm 2.13.11+ supports JDK 21 |
-| SBT | 1.10.7 | Scala docs: SBT ≥1.9.0 required for JDK 21 |
-| Spark | 4.3.0 | Official docs: Windows, Java 17/21/25, Scala 2.13, Python 3.11+ |
-| PyTorch | ≥2.7.0 + CUDA ≥12.8 | RTX 5050 (sm_120/Blackwell) requires builds with sm_120 kernels |
-| Transformers | ≥4.45 | Tested with Python 3.11+, PyTorch 2.6+ |
-| PostgreSQL | 17.x or 18.x | Stable releases; five-year support policy |
-| pgvector | 0.8.x | Must match PostgreSQL major version headers |
-| Node.js | 24.x LTS | Next.js 16.x requires Node ≥20.9; 24 LTS is current |
-| Next.js | 16.x | Current stable; supports Windows |
-| NVIDIA Driver | 621.01 | Supports CUDA 13.5 UMD; exceeds minimum for PyTorch CUDA 12.8+ |
+## 8. Compatibility notes and known issues
 
-### Critical Compatibility Rules
-
-1. **Do not mix Spark versions.** Legacy source uses Spark 3.5/Scala 2.12 — the new project uses Spark 4.3/Scala 2.13. They cannot share a build.
-2. **Do not use Python 3.14** for this project. The `py` launcher defaults to 3.14.6, which is incompatible.
-3. **PyTorch CUDA version ≠ NVIDIA driver CUDA version.** Driver 621.01 reports CUDA 13.5 capability. The PyTorch wheel bundles its own CUDA runtime (e.g., 13.2). They are independent.
-4. **No full CUDA Toolkit required.** Prebuilt PyTorch wheels bundle CUDA runtime libraries. Install `nvcc`/CUDA Toolkit only if compiling custom CUDA extensions.
-5. **pgvector version must match PostgreSQL major.** A pgvector built against PostgreSQL 17 headers will not work on PostgreSQL 18.
-
-### Official Documentation Links
-
-| Topic | URL |
+| Symptom / constraint | Required response |
 |---|---|
-| Spark 4.3.0 overview | https://spark.apache.org/docs/4.3.0/ |
-| Spark downloads | https://spark.apache.org/downloads.html |
-| PyTorch install selector | https://pytorch.org/get-started/locally/ |
-| PyTorch previous versions | https://pytorch.org/get-started/previous-versions/ |
-| PyTorch release/CUDA matrix | https://github.com/pytorch/pytorch/blob/main/RELEASE.md |
-| NVIDIA compute capabilities | https://developer.nvidia.com/cuda/gpus |
-| NVIDIA CUDA compatibility | https://docs.nvidia.com/deploy/cuda-compatibility/ |
-| Transformers installation | https://huggingface.co/docs/transformers/installation |
-| Scala JDK compatibility | https://docs.scala-lang.org/overviews/jdk-compatibility/overview.html |
-| SBT setup | https://www.scala-sbt.org/1.x/docs/Setup.html |
-| PostgreSQL downloads | https://www.postgresql.org/download/windows/ |
-| PostgreSQL versioning | https://www.postgresql.org/support/versioning/ |
-| pgvector installation | https://github.com/pgvector/pgvector#windows |
-| Node.js downloads | https://nodejs.org/en/download/ |
-| Node release schedule | https://nodejs.org/en/about/previous-releases |
-| Next.js installation | https://nextjs.org/docs/app/getting-started/installation |
-| winutils repository | https://github.com/cdarlint/winutils |
+| Wrong interpreter or root packages absent | Invoke .venv\Scripts\python.exe explicitly; inspect sys.executable. Never clear/reuse temp/.venv or repair global Python automatically |
+| Global JAVA_HOME differs from selected JDK | Use project-scoped configuration/child-process selection; report mismatch and verify the chosen java/javac |
+| Spark/Scala versions differ | Use Spark 4.3.0 with Scala 2.13.18 and the inspected matching distribution; do not mix legacy2.12 artifacts |
+| winutils/Hadoop native warning | Reproduce the failing required filesystem operation first; review matching Hadoop 3.5.0 provenance before approving native binaries |
+| CPU torch or no sm_120 kernel | Verify selected interpreter/build and actual CUDA kernel. Use the official candidate wheel; do not update drivers blindly |
+| torch imports but CUDA is false | Record torch.version.cuda, device architecture, driver and the actual error; no training until a real tensor test passes |
+| NumPy/native-extension import failure | Check wheel/interpreter/ABI in the isolated environment; pip check alone is insufficient. Do not repair unrelated shared runtimes |
+| pgvector Python package exists but SQL type fails | Install/enable the matching server extension through approved Phase 9 setup; adapter and extension are separate |
+| pgvector native build fails | Verify x64 MSVC/nmake, PG18 headers/import libraries and the tagged source; agree an alternative before adding Docker/WSL |
+| DataLoader worker spawn/hang | Start num_workers=0 and use a proper main guard before increasing workers |
+| Memory/VRAM pressure | Recheck current available resources; separate Spark, training and demonstration modes; reduce approved micro-batches |
+| No permitted data/labels/model artifacts | Run validators/report blockers; do not fabricate labels, predictions or checkpoints |
 
----
+The installed driver should remain unless a reproduced incompatibility requires
+an approved update. A full Toolkit, cloud GPU and simultaneous large models are
+not part of the core setup.
 
-## 8. Known Issues and Solutions
+## 9. Storage, memory and offline operation
 
-### Issue 1: JAVA_HOME contains URL-encoded characters
+The latest parent-session sample was approximately **53.18 GiB free on D:** and
+**1.89 GiB available RAM**. These are changing point-in-time observations. Obtain
+new measurements from verify_environment.ps1 before every substantial operation.
 
-**Problem:** Current `JAVA_HOME` points to a Coursier-cached JDK path with `%252B` URL encoding:
-```
-C:\Users\bharg\AppData\Local\Coursier\cache\arc\...\jdk-21.0.12+8
-```
-This path contains a `+` character and fails in many tools.
+Keep a practical **20 GiB D: reserve**. Budget the archive plus extracted data,
+processed copies, one isolated environment, torch runtime, limited approved
+checkpoints, dependency caches and Spark scratch space. Torch is part of the
+venv footprint; do not count it twice as a separate full environment. Native
+C++ Build Tools and optional Docker images can add substantial disk usage.
 
-**Solution:** Set `JAVA_HOME` to the properly installed Adoptium JDK:
-```
-JAVA_HOME = C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot
-```
+Exact installation footprints are determined from the chosen packages/installers
+before manual installation. The existing resource snapshots do not guarantee
+that every workload fits. Do not move data/caches to C: or E: or delete historical
+environments to recover space automatically.
 
----
+Run one substantial GPU model at a time. Separate large Spark jobs, Transformer
+training and full application demonstration. Cache approved weights, tokenizers,
+metadata and permitted artwork before the offline rehearsal; verification must
+not trigger downloads. Core inference requires no paid API.
 
-### Issue 2: Python launcher (`py`) defaults to wrong version
+## 10. Installation completion checklist and hand-off
 
-**Problem:** `py.exe` defaults to Python 3.14.6, not 3.11.9.
+- [ ] Confirm explicit root Python 3.11.9 and preserve legacy runtimes.
+- [ ] Confirm selected project JDK 21 and document global JAVA_HOME mismatch.
+- [ ] Run Foundation/Data reports; record current free RAM/disk.
+- [ ] Manually add only packages needed for the next authorized phase.
+- [ ] Verify pip check plus required native imports/functional operations.
+- [ ] Manually prepare SBT 1.10.7/Spark 4.3.0 and approve dependency resolution.
+- [ ] Prove Scala 2.13.18/Parquet operation and decide native Windows needs.
+- [ ] Manually install torch2.14.1+cu132 and pass real CUDA/precision checks.
+- [ ] Review approved model licenses/cache budget before any weight download.
+- [ ] Manually prepare PostgreSQL 18.6 and matching pgvector0.8.7 for Phase 9.
+- [ ] Prepare Node 24.22.2/npm and the actual frontend lockfile in Phase 10.
+- [ ] Reinspect after each installation and update IMPLEMENTATION_STATUS.md.
+- [ ] Start dependent execution only after its relevant gate passes.
 
-**Solution:** Never use bare `py` for this project. Always either:
-- Activate the `.venv` and use `python`
-- Use the explicit path: `C:\Users\bharg\AppData\Local\Programs\Python\Python311\python.exe`
-
----
-
-### Issue 3: Spark on Windows requires winutils.exe
-
-**Problem:** Spark calls Hadoop filesystem utilities that don't exist natively on Windows, causing `java.io.FileNotFoundException` or `Could not locate executable null\bin\winutils.exe`.
-
-**Solution:** Install Hadoop Windows binaries (Step 4a) and set `HADOOP_HOME`.
-
----
-
-### Issue 4: Low available RAM at measurement
-
-**Problem:** Only ~1.85 GiB was free at measurement time (of 15.71 GiB total).
-
-**Solution:**
-- Close unnecessary applications before running Spark jobs or model training.
-- Do not run Spark and GPU training simultaneously.
-- Re-measure available RAM with `(Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory / 1MB` before heavy workloads.
-
----
-
-### Issue 5: Limited disk space on D: drive
-
-**Problem:** D: drive has ~54 GiB free. With MovieLens 32M (~1.1 GiB), dependencies (~5–10 GiB), models (~2–5 GiB), and processed data (~5–10 GiB), space may be tight.
-
-**Solution:**
-- Keep a 20 GiB reserve on D:.
-- Consider installing Spark and PostgreSQL on C: (129 GiB free) or E: (92 GiB free).
-- Monitor with: `Get-CimInstance Win32_LogicalDisk | Select DeviceID, @{N='FreeGB';E={[math]::Round($_.FreeSpace/1GB,1)}}`.
-
----
-
-### Issue 6: PyTorch sm_120 support
-
-**Problem:** Standard PyTorch builds with CUDA ≤12.4 do not include `sm_120` kernels for the RTX 5050 Blackwell GPU, causing `RuntimeError: CUDA error: no kernel image is available`.
-
-**Solution:** Install PyTorch with CUDA ≥12.8 index. Verify with:
-```python
-print(torch.cuda.get_arch_list())  # Must contain sm_120
-```
-
----
-
-### Issue 7: pgvector build on Windows
-
-**Problem:** pgvector requires C++ compilation with `nmake` from Visual Studio Build Tools, which is a large (~3–6 GB) installation.
-
-**Solutions (choose one):**
-1. **Native build:** Install VS Build Tools → use x64 Native Tools prompt → `nmake /F Makefile.win`.
-2. **Docker alternative:** `docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=pw pgvector/pgvector:pg17` (requires Docker Desktop).
-
----
-
-### Issue 8: Data loader workers on Windows
-
-**Problem:** PyTorch `DataLoader` with `num_workers > 0` on Windows can cause `BrokenPipeError` or hangs due to `spawn` multiprocessing.
-
-**Solution:** Start with `num_workers=0` (single-process data loading). Increase cautiously after testing.
-
----
-
-## 9. Disk Space Budget
-
-Estimated storage requirements on D: drive (current free: ~54 GiB):
-
-| Component | Estimated Size | Drive Recommendation |
-|---|---|---|
-| Python `.venv` + all packages | 5–8 GiB | D: (project workspace) |
-| PyTorch CUDA wheel | 2.5–3.5 GiB | D: (inside .venv) |
-| Apache Spark distribution | ~0.6 GiB | C: or D: |
-| PostgreSQL + pgvector | ~0.3 GiB | C: (default installer) |
-| SBT + cached dependencies | ~0.5–1 GiB | User home (default) |
-| Node.js + `node_modules` | ~0.3–0.5 GiB | D: |
-| MovieLens 32M (already present) | ~1.1 GiB | D: (already at `data/raw/`) |
-| Model checkpoints (future) | 1–3 GiB | D: |
-| Processed data / Parquet (future) | 2–5 GiB | D: |
-| **Reserve** | **20 GiB** | D: |
-| **Total estimated** | **~33–43 GiB** | |
-
-> [!WARNING]
-> With ~54 GiB free, there is limited headroom. Consider installing Spark and PostgreSQL on C: drive. Monitor space before each major installation or data processing step.
-
----
-
-## 10. Installation Quick Reference
-
-```mermaid
-flowchart TD
-    A["Step 1: Fix JAVA_HOME<br/>(no download)"] --> B["Step 2: Create .venv<br/>(no download)"]
-    B --> C["Step 2a: pip install Group A<br/>(foundation packages)"]
-    C --> D["Step 3: Install SBT<br/>(MSI installer)"]
-    D --> E["Step 4: Install Spark 4.3.0<br/>(extract .tgz + env vars)"]
-    E --> F["Step 4a: Install winutils<br/>(download binaries)"]
-    F --> G["Step 5: pip install PyTorch+CUDA<br/>(~3 GB download)"]
-    G --> H["Step 5a: pip install Group B<br/>(NLP packages)"]
-    H --> I["Step 6: Install PostgreSQL<br/>(MSI installer)"]
-    I --> J["Step 6a: Build pgvector<br/>(requires VS Build Tools)"]
-    J --> K["Step 6b: pip install Group C<br/>(backend packages)"]
-    K --> L["Step 7: Install Node.js 24 LTS<br/>(MSI installer, Phase 10)"]
-    L --> M["Step 7a: npm install Group D<br/>(frontend packages, Phase 10)"]
-    
-    style A fill:#90EE90
-    style B fill:#90EE90
-    style G fill:#FFD700
-    style I fill:#FFD700
-    style J fill:#FFA500
-    style L fill:#87CEEB
-```
-
-**Legend:** 🟢 No download needed · 🟡 Large download · 🟠 May need VS Build Tools · 🔵 Deferred to Phase 10
-
-### Summary Table
-
-| Step | Software | Version | Phase | Download Link | Mandatory |
-|:---:|---|---|:---:|---|:---:|
-| 1 | Fix JAVA_HOME | — | 0 | N/A | ✅ |
-| 2 | Python 3.11 venv | 3.11.9 | 0 | Already installed | ✅ |
-| 2a | Foundation packages | See Group A | 0–1 | pip | ✅ |
-| 3 | SBT | 1.10.7 | 2 | https://github.com/sbt/sbt/releases | ✅ |
-| 4 | Apache Spark | 4.3.0 | 2 | https://spark.apache.org/downloads.html | ✅ |
-| 4a | winutils.exe | Hadoop 3.x | 2 | https://github.com/cdarlint/winutils | ✅ |
-| 5 | PyTorch + CUDA | ≥2.7 + CUDA ≥12.8 | 3 | https://pytorch.org/get-started/locally/ | ✅ |
-| 5a | NLP packages | See Group B | 3–6 | pip | ✅ |
-| 6 | PostgreSQL | 17.x/18.x | 9 | https://www.postgresql.org/download/windows/ | ✅ |
-| 6a | pgvector | 0.8.x | 9 | https://github.com/pgvector/pgvector | ✅ |
-| 6b | Backend packages | See Group C | 9 | pip | ✅ |
-| 7 | Node.js | 24 LTS | 10 | https://nodejs.org/en/download/ | ✅ |
-| 7a | Frontend packages | See Group D | 10 | npm | ✅ |
-| — | VS Build Tools | Latest | 9 | https://visualstudio.microsoft.com/downloads/ | ⚠️* |
-| — | Docker Desktop | Latest | — | https://www.docker.com/products/docker-desktop/ | ❌ |
-| — | CUDA Toolkit | — | — | https://developer.nvidia.com/cuda-downloads | ❌ |
-
-*\* Required only if building pgvector natively; not needed if using Docker for PostgreSQL.*
-
----
-
-> [!NOTE]
-> **After you install each prerequisite**, let me know and I will re-inspect the environment to verify correct installation, version compatibility, and readiness before proceeding to implementation.
-
+The user performs all installations. Ordinary authorized source edits/tests
+continue within the current phase; missing later prerequisites do not justify
+skipping phase gates or claiming the complete application works.

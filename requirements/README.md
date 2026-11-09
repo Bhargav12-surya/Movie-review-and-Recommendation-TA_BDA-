@@ -14,6 +14,11 @@ published compatible candidates, not a claim that a transitive resolver or
 runtime test has succeeded. After manual installation, run pip check and the
 relevant import/functional verification before generating a final lock.
 
+The later requirements-nlp.txt and requirements-backend.txt files contain
+candidate direct pins for their named phases. The requirements-dev.txt file
+inside this directory delegates to the single root pytest pin. They are
+instructions for manual installation, not evidence that anything is installed.
+
 PyTorch's CUDA wheel is installed separately from the official CUDA index.
 Its GPU build must pass a tensor operation in this project's Python 3.11
 environment. NLP, backend, frontend and speech dependency groups are added

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Provisional source-qualified movie identity",
+  "type": "object",
+  "required": ["source_movie_key", "movielens_id", "canonical_movie_id", "mapping_status", "externally_verified"],
+  "properties": {
+    "source_movie_key": {"type": "string", "pattern": "^movielens:[1-9][0-9]*$"},
+    "movielens_id": {"type": "integer", "minimum": 1},
+    "canonical_movie_id": {"type": "null"},
+    "mapping_status": {"const": "provisional"},
+    "externally_verified": {"const": false}
+  }
+}

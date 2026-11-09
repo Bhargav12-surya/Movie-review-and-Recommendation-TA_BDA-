@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "source": "stanford_acl_imdb",
+  "version": "1.0",
+  "local_path": "data/raw/acl_imdb",
+  "expected_counts": {
+    "train/neg": 12500, "train/pos": 12500, "train/unsup": 50000,
+    "test/neg": 12500, "test/pos": 12500
+  },
+  "label_map": {"negative": 0, "positive": 1},
+  "neutral_labels_available": false,
+  "application_movie_mapping_available": false,
+  "validation_fraction": 0.2,
+  "seed": 42,
+  "near_duplicate_threshold": 0.9,
+  "candidate_limit_per_document": 128,
+  "max_review_bytes": 2097152
+}

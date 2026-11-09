@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Permitted canonical movie-linked review revision",
+  "type": "object",
+  "required": ["review_id", "movie_id", "revision",
+    "language_code", "created_at", "moderation_status", "is_deleted",
+    "source", "source_type", "training_permitted"],
+  "properties": {
+    "review_id": {"type": "string", "minLength": 1},
+    "movie_id": {"type": ["string", "integer"]},
+    "revision": {"type": "integer", "minimum": 1},
+    "review_text": {"type": ["string", "null"]},
+    "text_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "language_code": {"type": "string", "pattern": "^[a-z]{2,3}(-[A-Z]{2})?$"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "updated_at": {"type": "string", "format": "date-time"},
+    "moderation_status": {"enum": ["published", "approved", "pending", "held", "rejected"]},
+    "is_deleted": {"type": "boolean"},
+    "is_synthetic": {"const": false},
+    "source": {"type": "string", "minLength": 1},
+    "source_type": {"enum": ["first_party", "licensed"]},
+    "training_permitted": {"type": "boolean"},
+    "analysis_permitted": {"type": "boolean"},
+    "consent_version": {"type": "string", "minLength": 1},
+    "license": {"type": "string", "minLength": 1},
+    "terms_version": {"type": "string", "minLength": 1},
+    "usage_approved": {"type": "boolean"}
+  },
+  "allOf": [
+    {"if": {"properties": {"source_type": {"const": "first_party"}}},
+     "then": {"required": ["consent_version", "analysis_permitted"]}},
+    {"if": {"properties": {"source_type": {"const": "licensed"}}},
+     "then": {"required": ["license", "terms_version", "usage_approved"],
+              "properties": {"usage_approved": {"const": true}}}},
+    {"if": {"properties": {"is_deleted": {"const": false}}},
+     "then": {"required": ["review_text"],
+              "properties": {"review_text": {"type": "string", "minLength": 1},
+                             "analysis_permitted": {"const": true}}}}
+  ],
+  "$comment": "The Python validator also requires approved canonical registry membership, original-text hash, revision uniqueness and temporal consistency. CSV scalar strings are explicitly coerced by that validator."
+}

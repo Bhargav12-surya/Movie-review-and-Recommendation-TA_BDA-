@@ -1,0 +1,8 @@
+# Human-readable configuration catalogue; runtime verification reads the JSON file.
+schema_version: 1
+runtime_configuration: configs/environment.json
+software_installation: manual_only
+dataset_acquisition: manual_only
+model_downloads: require_separate_approval
+external_api_access: require_separate_approval
+global_environment_changes: require_separate_approval

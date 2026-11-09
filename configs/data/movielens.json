@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "source": "ml-32m",
+  "source_directory": "data/raw/movielens/ml-32m",
+  "expected_counts": {
+    "movies": 87585,
+    "links": 87585,
+    "ratings": 32000204,
+    "tags": 2000072,
+    "users": 200948
+  },
+  "raw_policy": "immutable",
+  "identity_policy": "provisional_source_keys_only",
+  "mapping_conflicts": "quarantine_without_merging"
+}

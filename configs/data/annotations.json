@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "sentiment_schema_version": "sentiment-three-class-v1",
+  "sentiment_labels": {"negative": 0, "neutral": 1, "positive": 2},
+  "aspect_taxonomy_version": "movie-aspects-v1",
+  "aspects": [
+    "acting", "story", "screenplay", "direction", "characters",
+    "cinematography", "visual_effects", "editing", "pacing", "music",
+    "sound_design", "dialogue", "worldbuilding", "emotional_impact",
+    "originality", "runtime"
+  ],
+  "themes": [
+    "love_and_family", "time_and_memory", "survival", "sacrifice",
+    "identity", "revenge", "justice", "coming_of_age", "human_nature",
+    "technology_and_artificial_intelligence", "social_inequality",
+    "war_and_peace", "grief_and_loss", "power_and_corruption",
+    "exploration_and_discovery"
+  ],
+  "mixed_aspect_theme_policy": "requires_explicit_approved_opt_in",
+  "offset_unit": "original_unicode_code_points",
+  "normalization": "identity-v1",
+  "implicit_aspects": "unsupported_until_annotation_scheme_is_approved",
+  "maximum_record_bytes": 2097152
+}

@@ -1,0 +1,19 @@
+# Phase 3+ candidate direct pins. Manual installation only.
+# This is not a resolver-tested transitive lock.
+# Install/verify torch from its official cu132 index FIRST; PyPI must not pick CPU torch.
+# The explicit local-version pin refuses an accidental CPU substitution.
+-c analysis.txt
+torch==2.14.1+cu132
+transformers==4.57.3
+datasets==4.4.1
+accelerate==1.11.0
+sentence-transformers==5.1.2
+tokenizers==0.22.1
+safetensors==0.6.2
+huggingface-hub==0.36.0
+sentencepiece==0.2.1
+evaluate==0.4.6
+seqeval==1.2.2
+rouge-score==0.1.2
+bert-score==0.3.13
+fsspec==2025.10.0
