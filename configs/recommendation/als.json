@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "input_path": null,
+  "output_path": "models/recommendation/als-run-001",
+  "train_end": null,
+  "validation_end": null,
+  "rank": 32,
+  "regularization": 0.1,
+  "iterations": 10,
+  "mode": "validation",
+  "input_files_sha256": {},
+  "note": "Cutoffs, input Parquet fingerprints and trial parameters must be reviewed. Each run has a fresh output and explicit approval."
+}
+

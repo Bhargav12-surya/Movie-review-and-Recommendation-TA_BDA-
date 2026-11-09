@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "task": "embeddings",
+  "workspace": null,
+  "output_dir": "models/embeddings/run-001",
+  "approval_path": null,
+  "language_scope": [
+    "en",
+    "hi",
+    "hi-Latn",
+    "mul"
+  ],
+  "data": {
+    "canonical_registry_path": null,
+    "provenance_path": null,
+    "manifests": {
+      "train": null,
+      "tuning": null,
+      "calibration": null,
+      "test": null
+    }
+  },
+  "model": {
+    "local_path": null,
+    "permission_path": null
+  },
+  "device": "cpu",
+  "batch_size": 8,
+  "maximum_reviews": 10000,
+  "maximum_selected_reviews": 24,
+  "maximum_chunks": 32,
+  "maximum_input_tokens": 384,
+  "n_topics": 12
+}
+

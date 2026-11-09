@@ -1,0 +1,10 @@
+{
+  "mapping_approved": false,
+  "reviewed_by": null,
+  "canonical_registry_sha256": null,
+  "canonical_registry_path": null,
+  "source_namespace": "movielens",
+  "source_to_movie": {},
+  "note": "Actual validated MovieLens-to-canonical IDs only. Empty example is not an approved mapping."
+}
+

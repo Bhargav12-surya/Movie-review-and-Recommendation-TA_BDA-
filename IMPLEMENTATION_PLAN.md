@@ -4,7 +4,17 @@ Audit date: 8 November 2026, Asia/Calcutta. Workspace: D:\BDA_TA.
 
 Original audit status: inspection was complete on 8 November 2026 and stopped for approval. Subsequent user instructions authorized implementation. On 9 November 2026 (Asia/Calcutta), the user explicitly approved dependency-based Phase 2 progress against validated local MovieLens inputs while Phase 1 provenance, canonical mappings and NLP annotations remain open. This is the accepted gate exception; the other phase dependencies remain. Software/dataset/model acquisition stays manual, build dependency resolution needs authorization, and substantial training is not approved. See IMPLEMENTATION_STATUS.md for actual evidence rather than treating this plan as completion.
 
+Latest scope on 9 November 2026: **generate files only; the user will implement/run them later**. Phase 3 sentiment and mandatory language-extension files are now prepared without asserting Phase 2 runtime acceptance. Current verification is static source/configuration validation only. No new model fitting, evaluation, unit-test execution, Spark jobs, installations, downloads or services are part of this delivery. Follow documentation/phase3/RUNBOOK.md for later execution. This explicit source-only exception supersedes statements below that would defer all Phase 3 file creation; their execution/data acceptance criteria remain.
+
 ## 1. Specification, scope, and complete system understanding
+
+Source expansion,10 November2026: the user requested files through Phase8 in one
+pass. Phase4-8 source/configuration/notebooks/tests/docs are prepared under the
+existing file-generation-only boundary. This supersedes any below wording that
+would defer these file creations until earlier runtime acceptance. It does not
+waive training,rights,canonical mapping,model selection,Spark execution or phase
+exit criteria. The actual later execution sequence is in
+documentation/phases4-8/RUNBOOK.md. No backend/frontend/chat deployment is included.
 
 The entire root ARCHITECTURE.md was read, including its hardware-specific section 32. Its SHA-256 at inspection was 52E0E9ED68F743C3B44913D6C079F177787DA3814A0BD38C88AAE24BE37621E3. The latest user instructions override its older download commands, compressed phase numbering, and optional-feature tiers.
 
@@ -186,7 +196,7 @@ Schema migrations must add actual foreign keys/unique/check constraints to the a
 
 Run Phase 0 completion first, then phases1→2→3→4→5→6→7→8→9→10→11→12→13. Each phase has objectives, files, dependencies, implementation order, tests, metrics, expected outputs and a completion checklist below. A checkbox records evidence, not confidence or elapsed effort. No model performance target is fabricated before baselines exist.
 
-Current execution order after the accepted exception: preserve completed foundation/data validation; implement and offline-check Phase 2 source against MovieLens; user manually prepares Spark/SBT/dependencies; verify the environment; compile/test and execute smoke, batch and streaming jobs; review Phase 2 evidence; integrate the requested NLP extension; close the relevant provenance/label/mapping prerequisites before NLP training. Independent source work does not substitute for any unexecuted check.
+Current delivery order: preserve foundation/data validation and Phase 2 evidence; generate Phase 3 and language-extension files under the user's source-only instruction; statically validate and hand off. Later execution order: recheck the manually installed tools; recompile final Scala sources and run the Phase 2 unit/Parquet/batch/streaming/UI checks; accept the Phase 2 gate; close the relevant source/label/mapping/model requirements; then follow the Phase 3 runbook. Independent source work does not substitute for any unexecuted check.
 
 ### Phase 0 — workspace, hardware and environment audit/foundation
 
@@ -289,9 +299,11 @@ Completion checklist:
 
 Objective: compare defensible binary benchmarks and train the genuine final three-class movie-domain classifier.
 
+Source status: modular classical, English Transformer, multilingual and independent sarcasm implementations are generated; no Phase 3 model has been trained/evaluated. Original-text alignment utilities and optional adapter contracts do not establish Hindi/Hinglish capability. See documentation/phase3/GENERATED_FILES.md and RUNBOOK.md. Learned sarcasm/sentiment fusion, a trained language detector and a transliterator are not supplied or claimed; independently trained diagnostics must not reverse sentiment.
+
 Dependencies: approved source licenses/model checkpoint, valid neutral labels, frozen splits and functioning GPU environment. No approved data means no training.
 
-Files: ml/sentiment_tfidf and ml/sentiment_transformer component bundles; ml/common/{data, metrics, calibration, hardware, checkpointing}.py; configs/training/*; notebooks/03_review_preprocessing, 04_tfidf_baseline, 05_transformer_sentiment, 06_sentiment_evaluation.ipynb; sentiment model cards/tests.
+Files: ml/sentiment_tfidf, ml/sentiment_transformer, ml/multilingual_sentiment and ml/sarcasm component bundles; ml/informal_language; shared ml/common utilities; configs/training/*; scripts/prepare_sentiment_splits.py and train_models.ps1; schemas/datasets/phase3_review_manifest.schema.json; tests/ml; notebooks03-06 and five language/ablation notebooks; model cards and the language annotation addendum. Each trainable component has train.py,evaluate.py,predict.py,config.yaml,README.md,model_card.md.
 
 Implementation order:
 
@@ -301,7 +313,7 @@ Implementation order:
 4. Run an approved tiny forward/backward/checkpoint smoke only after data/GPU checks; then approve the bounded training configuration.
 5. Fine-tune one model using sequence 128, micro-batch 4 initially, dynamic padding, gradient accumulation, validated mixed precision and low worker counts. Checkpoint supported models when needed.
 6. Save/reload/resume optimizer, scheduler, scaler and RNG state; early-stop using validation metrics. Use fixed seeds while documenting GPU nondeterminism.
-7. Tune truncation/chunk aggregation and calibrate on validation data. Apply the same policy in evaluation and serving.
+7. Select truncation/representation/hyperparameters on tuning data, then fit temperature on a separate calibration subset of the original validation partition. Keep train,tuning,calibration,test groups disjoint. The generated model uses documented truncation; chunk aggregation remains a later controlled experiment. Freeze tokenizer, slang/emoji views and model-source hashes for checkpoint resume and inference.
 8. Freeze the selected model, evaluate held-out data once, save metrics/error examples/model card and register approved artifacts.
 
 Tests: raw-text preservation, train-only vocabulary, split isolation, label mapping, probability normalization, empty/long/negated/mixed/language cases, train-serving tokenization parity, CPU fallback, CUDA memory and resume/reload equivalence.
@@ -318,6 +330,12 @@ Completion checklist:
 - [ ] No heuristic production neutral/mixed overlay or hardcoded predictions.
 
 ### Phase 4 — trained aspect extraction and aspect sentiment
+
+Source status: generated,not trained/accepted. Shared local supervised engine,
+complete-annotation loader,original-offset BIO/window adapter,target-context
+classifier and sequential full pipeline are present. Read documentation/phase4
+and documentation/phases4-8 before execution. Implicit/mixed/overlapping target
+schemes remain unsupported until separately reviewed; no source capability claim.
 
 Objective: identify movie aspects/evidence and classify target-specific sentiment, including mixed sentences.
 
@@ -348,6 +366,14 @@ Completion checklist:
 - [ ] No keyword-only extraction claimed as a trained final model.
 
 ### Phase 5 — themes, topics, embeddings and grounded summaries
+
+Source status: generated,not evaluated. Multi-label Transformer relevance,
+train-only LDA and numeric inference,reviewed local Sentence Transformer inference,
+movie-isolated evidence snapshots and hierarchical summary candidates are present.
+Pretrained embedding/summary operation is explicitly distinct from local fitting.
+BERTopic,reference overlap metrics and curated cluster mapping are unclaimed
+until their actual inputs/experiments exist. Generation needs factuality approval
+before publication; default evidence extraction uses actual source quotes.
 
 Objective: derive separately documented themes and audience reception, build reusable semantic representations, and summarize actual linked reviews faithfully.
 
@@ -381,6 +407,11 @@ Completion checklist:
 
 ### Phase 6 — suspicious-review risk analysis
 
+Source status: generated,not validated. Exact/TF-IDF similarity,legitimate
+behaviour vectors,actual Isolation Forest fitting and numeric-tree inference
+are separate. Sentiment is excluded; no fake verdict or calibrated fraud
+probability is returned. Missing history/labels remain missing evidence.
+
 Objective: provide transparent moderation support from legitimate text/behaviour signals.
 
 Dependencies: real permitted review records; stable account/event provenance where available; human label definitions for any supervised claims.
@@ -409,6 +440,12 @@ Completion checklist:
 - [ ] No synthetic fixture result presented as real detection performance.
 
 ### Phase 7 — movie scoring and audience intelligence
+
+Source status: generated,not accepted. Python latest-revision/eligibility and
+reviewer/text deduplication,reviewed evidence gates,weighted/shrunk index,
+bootstrap sensitivity,target-only records and Scala aggregate source are present.
+Thresholds/prior remain null until reviewed. Actual Python/Scala parity,
+transactional publishing and streaming/event integration remain open.
 
 Objective: turn trained eligible review predictions into transparent evidence-qualified snapshots.
 
@@ -441,6 +478,15 @@ Completion checklist:
 - [ ] Ratings, personalization and metadata are never substituted for sentiment.
 
 ### Phase 8 — Spark ALS and personalized hybrid recommendations
+
+Source status: generated,not trained. Real Scala global-time split/MLlib ALS,
+sampled ranking/factor export,Python verified factor import/content profile,
+channel normalization/diversity reranking and ranking metrics are present.
+Validation selection functions use actual reports. App identities never borrow
+MovieLens factors; optional fold-in remains disabled without method approval.
+The sampled Scala protocol and cold fallback need measured validation and are
+not full-catalogue performance claims. Actual genre diversity needs catalogue
+metadata and Python evaluation. No automatic large ALS run is authorized.
 
 Objective: fit/evaluate real collaborative filtering and combine it with content/preferences under one honest ranking contract.
 
@@ -675,4 +721,4 @@ If NLP data remains missing, continue the authorized MovieLens Phase 2 work and 
 - [x] No packages/datasets/models installed or downloaded; no model trained; no original project file overwritten.
 - [x] User approval received for implementation and the narrow dependency-based Phase 2 exception; installation and training are separate.
 
-Current next step: follow documentation/bda/RUNBOOK.md. Complete the manual Spark/SBT prerequisite step and actual Phase 2 checks before recording completion or starting the queued NLP extension. The original audit stop was already cleared by the user.
+Current next step: review the generated Phase 3 files and documentation/phase3/RUNBOOK.md. Spark/SBT were subsequently found at configured manual-install paths, and an earlier snapshot of all 15 Scala main sources compiled offline; final-source recompilation and Phase 2 runtime checks remain pending. After the current source-only handoff, the next execution step is the environment/Phase 2 preflight in documentation/bda/RUNBOOK.md. No retraining or installation was performed for file generation.

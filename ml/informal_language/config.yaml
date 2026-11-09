@@ -1,13 +1,16 @@
-schema_version: 1
-original_text: immutable
-offset_unit: original_unicode_code_points
-default_text_view: identity-v1
-emoji_policy: preserve
-slang_mapping_path: null
-transliteration_adapter: null
-language_detector_artifact: null
-script_observations_are_language_predictions: false
-context_cue_terms:
-  negation: [not, never, no, nahi, nahin, mat, नहीं, मत]
-  contrast: [but, however, lekin, magar, लेकिन, मगर]
-sentiment_from_cues_or_emojis: false
+{
+  "schema_version": 1,
+  "original_text": "immutable",
+  "offset_unit": "original_unicode_code_points",
+  "default_text_view": "identity-v1",
+  "emoji_policy": "preserve",
+  "slang_mapping_path": null,
+  "transliteration_adapter": null,
+  "language_detector_artifact": null,
+  "script_observations_are_language_predictions": false,
+  "context_cue_terms": {
+    "negation": ["not", "never", "no", "nahi", "nahin", "mat", "नहीं", "मत"],
+    "contrast": ["but", "however", "lekin", "magar", "लेकिन", "मगर"]
+  },
+  "sentiment_from_cues_or_emojis": false
+}

@@ -1,6 +1,6 @@
 # Live implementation status
 
-Updated: 9 November 2026, Asia/Calcutta.
+Updated: 10 November 2026, Asia/Calcutta.
 
 ## Phase status
 
@@ -8,10 +8,19 @@ Updated: 9 November 2026, Asia/Calcutta.
 |---|---|
 | 0 — foundation | Available foundation checks completed and tested; the full stack is not installed |
 | 1 — data validation/mapping | Implemented and executed on available sources; partial because provenance, canonical mappings and movie-linked annotations remain unresolved |
-| 2 — Scala/Spark | Source implemented under the user's gate exception; offline checks pass; Spark compilation/runtime blocked by manual prerequisites |
-| 3–13 | Not started; no model training, application deployment or inference claim |
+| 2 — Scala/Spark | Source implemented; an earlier15-file main snapshot compiled offline using installed Spark. Later edits need recompiling; ScalaTest/Parquet/batch/streaming/UI acceptance remains open |
+| 3 — sentiment and mandatory language extension | Modular source,configs,9 notebooks,20 authored ML test methods and runbook generated; static checks only; no trained/evaluated model |
+| 4 — aspects | Source/configs/tests/notebooks generated; no trained or evaluated aspect models |
+| 5 — themes/topics/embeddings/summaries | Source generated; no actual fitting,embedding generation or summary publication |
+| 6 — review risk | Analytical and actual trainable anomaly source generated; no validated fake-review claim |
+| 7 — audience scoring | Evidence-qualified Python/Scala source and blank methodology templates generated; no real scores or parity test |
+| 8 — recommendations | Real Scala ALS/sampled evaluation and Python hybrid source generated; no fitting,validated factors or ranking result |
+| 9–13 | Not started; no application deployment or integrated inference claim |
 
-The latest master prompt authorizes ordinary implementation and tests in order.
+The latest instruction is **generate files; the user will implement/run later**.
+The user explicitly expanded this to generate through Phase8 in one pass.
+Earlier runtime/data gates remain open. Current checks are static; no new
+unit tests,inference,training or Spark jobs run.
 All software/dataset/model downloads remain manual. No package installation,
 external API call, substantial training, global environment edit, destructive
 migration, staging or commit was performed by this work.
@@ -325,3 +334,184 @@ NLP target need reconciliation with this working manual installation before
 future resolution; no automatic replacement is authorized. The queued NLP
 extension still follows Phase2 execution acceptance. Spark/SBT/runtime artifacts
 and the legitimate NLP data requirements remain the next dependencies.
+
+## Phase 3 file-generation handoff — 9 November 2026
+
+The user's later "just generate files, i implement later" instruction changed
+the delivery boundary. Files are prepared for later execution; this is not a
+claim that Phase2,Phase3,the language extension or the application is complete.
+No new installers,resolvers,dataset/model downloads,fits,training,evaluation,
+unit tests,services,Spark jobs,Git staging or commits were run for this handoff.
+Existing raw data,legacy sources and user-edited requirements were preserved.
+
+### Generated implementation
+
+| Source group | Result and boundary |
+|---|---|
+| ml/sentiment_tfidf | Real train-only BoW/TF-IDF LR/SVM, separate calibration, bounded numeric JSON model state and actual-weight inference; no unpickling |
+| ml/sentiment_transformer | Shared local supervised loop for separate binary/domain experiments; genuine three-class labels still required |
+| ml/multilingual_sentiment and ml/sarcasm | Separate train/evaluate/predict/config/README/model-card bundles; no pretrained knowledge presented as validated Hinglish/sarcasm support |
+| ml/common | Bounded frozen manifests, canonical-ID/permission/leakage guards, label maps,metrics,temperature calibration,CUDA/AMP/resource checks and optimizer/scheduler/scaler/RNG checkpoint logic |
+| ml/informal_language | Immutable Unicode originals, aligned optional views, original-span/UTF16 conversion, conservative script/symbol/cue observations and explicit optional-adapter absence |
+| configs/training and phase3 manifest schema | Binary configs and blank provenance/model/run/final-selection records; missing prerequisites stay null/false |
+| scripts/prepare_sentiment_splits.py | Later disjoint tuning/calibration preparation from independently verified IMDb validation references; original train/test unchanged |
+| scripts/train_models.ps1 | Manual preflight/train/resume/evaluate/predict entry points; training requires explicit switch plus actual approval records |
+| scripts/verify_phase3_sources.py | Standard-library static source/config/notebook validator with fresh artifact fingerprints; does not import model code |
+| tests/ml |20 authored methods, not executed; fixtures isolated from actual training/evaluation/evidence |
+| notebooks |9 new unexecuted experiments: preprocessing,TF-IDF,Transformer,evaluation,informal language,Hinglish,sarcasm,emoji ablation,multilingual comparison |
+| Architecture/plan/audit/runbook docs | User-requested section33 extension and source-only authorization recorded; current environment metadata separated from historical execution |
+
+Source review tightened IMDb paths and class folders: only labelled train/neg,
+train/pos,test/neg,test/pos references can supply binary labels. Unsupervised,
+mislabelled,missing-source-split and escaped references are rejected. Human
+sentiment and independent sarcasm labels remain different tasks. Eligibility
+flags require JSON booleans; unresolved languages stay outside supervised fits.
+Exact/normalized/source-movie/reviewer groups cannot cross split boundaries.
+These safeguards are implemented source, not newly executed model/data tests.
+
+The Transformer run freezes model/tokenizer hashes and resolved slang/emoji
+views in input_contract.json. Resume binds it and exact config/manifest hashes;
+owned checkpoint states use weights-only reload. Training selects on tuning;
+temperature fits a different calibration set. Both model families require a
+human frozen-selection record and exclusive reservation before final-test text
+access. Unknown model artifacts return explicit unavailability. No sentiment
+keyword lookup,neutral overlay,sarcasm inversion or fabricated metric is used.
+
+The language extension is prepared, not finished: language detection and
+transliteration expose optional reviewed adapters; no trained adapters are
+bundled. Sarcasm attachment is an independent diagnostic, not learned fusion.
+An actual fused/multitask ablation,full emoji grapheme handling,multilingual
+aspects,summaries and backend integration retain their later requirements.
+
+### Verification and historical evidence
+
+Static checks passed for **49 Python files,13 JSON/config/schema files and9
+notebooks containing63 cells/27 Python code cells**. All code cells have null
+execution counts and empty outputs. The PowerShell training launcher parsed
+with zero errors. Git diff --check passed. The source checker counted20 authored
+ML test methods; none were run. JSON parsing is not semantic JSON Schema
+validation. Static parsing does not validate APIs,CUDA,native packages,resume
+equivalence,model performance or full integration.
+
+Evidence: [final static source report](artifacts/source_validation/phase3-20261109-final-af01c453.json).
+Its hashes identify the checked source/config/notebook snapshot. The separate
+PowerShell parse result is [the saved parser report](artifacts/source_validation/phase3-powershell-20261109-af01c453.json).
+
+Before the file-only instruction, the user-installed Spark4.3.0 distribution
+provided279 JARs with Scala2.13.18. All15 main files compiled successfully in
+6.266seconds and produced a thin JAR; no SBT resolver ran. See
+[the original build report](artifacts/scala-build/20261109T082431Z-6ca44eba/build_report.json).
+Later RFC CSV quoting and strict deletion-flag edits have not been recompiled.
+The earlier compile is evidence for its recorded hashes, not final-source or
+Spark runtime acceptance. ScalaTest and real jobs remain open.
+
+Spark and SBT homes are configured from their manual installations. New discovery
+source prioritizes explicit arguments,then named environment variables,then
+project configuration; a PATH change or duplicate installation is unnecessary.
+The SBT launcher is present, but bootstrap/test dependency caches were not
+established by executing SBT. Latest package metadata reports cu132 rather than
+the earlier cu130 installation whose tiny CUDA/precision operations passed.
+That changed environment needs a later real verification. See ENVIRONMENT_AUDIT.md
+section14 and PREREQUISITES.md section11; no installation or global edit occurred.
+
+### Remaining dependencies and exact next action
+
+Phase1 remains partial: reviewed source provenance,approved canonical mappings,
+permission-backed movie reviews,genuine neutral/language/sarcasm/aspect labels
+and model-source approvals are missing in the last bounded inventory. MovieLens
+and IMDb do not supply these by themselves. No source permission,model license,
+mapping,training example or result was fabricated.
+
+Review [the generated-file index](documentation/phase3/GENERATED_FILES.md) and
+[Phase3 runbook](documentation/phase3/RUNBOOK.md). When execution resumes, first
+recheck the manually installed toolchain/current cu132 stack and available
+resources; recompile final Scala source and complete the Phase2 smoke,batch and
+streaming evidence gate. Then prepare distinct tuning/calibration references,
+complete the legitimate data/model/run records and run the two classical
+baselines before an explicitly approved tiny GPU/checkpoint experiment. The
+runbook gives exact commands. Nothing requires retraining during evaluation.
+
+## Source generation through Phase 8 — 10 November 2026
+
+The user requested files through Phase8 in one shot while retaining the
+generate-files/implement-later boundary. The batch prepares independent phases
+in order; it does not assert that missing data/training/runtime gates passed.
+No new packages,models or datasets were acquired; no inference,fitting,
+training,evaluation,unit tests,services,Scala compilation or Spark job ran.
+Raw data,legacy files,user dependency edits and Git state were preserved.
+
+### Files and behavior
+
+- Phase4: ml/aspect_common config/data/metrics/engine/CLI; per-model
+  ml/aspect_extraction and aspect_sentiment bundles; original-offset subword
+  BIO/overlap windows; exact-target paired context; sequential aspect_pipeline.
+  Complete annotations,rights,canonical IDs,actual baselines,model/run/source
+  hashes and explicit final selection are enforced before fitting/testing.
+- Phase5: supervised multi-label Transformer theme relevance with independent
+  per-theme calibration/tuning thresholds; bounded train-only LDA and portable
+  variational inference; reviewed local Sentence Transformer inference; eligible
+  movie snapshots,balanced retrieval and bounded hierarchical summarization.
+  Extractive evidence is the default; novel candidates require matching human
+  factuality approval. Theme relevance never becomes theme audience sentiment.
+- Phase6: actual duplicate/TF-IDF signals and legitimate behavioural features;
+  bounded Isolation Forest training,portable numeric trees and real held-out
+  PR/F1/false-positive calculations. Sentiment is excluded; risk is relative
+  moderation support with no fake verdict or calibrated fraud probability.
+- Phase7: scoring policy/eligibility/aggregate modules; latest revisions,
+  reviewer/text deduplication,minimum distinct/effective evidence,weighted index,
+  optional reviewed shrinkage and bootstrap sensitivity. Target reception needs
+  separate approved probabilities; newer missing/deleted analysis cannot revive
+  old target evidence. No evidence returns null with the exact required message.
+  Scala ReviewAnalytics independently implements the numeric aggregate on already
+  eligible rows. Actual parity and streaming/transactional publication remain open.
+- Phase8: real Scala TemporalSplit,RankingEvaluation,RecommendationJob source
+  calls MLlib ALS and exports actual factors/popularity/ranking reports after
+  exact config/source/split approval. Python verifies factor parts,canonical
+  mappings,dimensions and namespaces; uses actual content/profile channels,
+  validation-selected weights,seen filters and bounded diversity reranking.
+  Optional ALS-WR fold-in needs method approval. Precision/Recall/NDCG@K,
+  coverage,genre diversity and train-only novelty retain cold/empty rankings.
+- Nine new unexecuted notebooks07-14 plus audience_scoring,component cards,
+  source/score/recommendation schemas,blank approval/config forms,manual
+  PowerShell/Python entry points and18 new authored Python contract test methods.
+  AudienceAndTemporalSpec adds4 authored Scala contracts; none of these tests ran.
+
+### Verification and limits
+
+Static source checks parsed109 Python files,34 JSON/config/schema files and
+18 unexecuted notebooks/54 Python code cells across the Phase3-8 source set
+at the initial snapshot. Subsequent source refinements are recorded by the final
+report linked below. Two new PowerShell launchers parsed with zero errors.
+The final snapshot passed **111 Python files,34 JSON/config/schema files and18
+notebooks containing54 code cells**,with zero static errors. The18 new Python
+and4 new Scala tests are authored only; no runtime test result is claimed.
+The existing Scala2.13.18 parser accepted24 main/test files,including the four
+new main files and the new test suite,without type checking,code generation or
+execution. Source is not claimed compiled. Authored tests were counted but not
+executed. JSON syntax is not semantic schema validation.
+
+Final evidence: [static source report](artifacts/source_validation/phases4-8-20261110-final-613cd7a2.json),
+[PowerShell parser report](artifacts/source_validation/phases4-8-powershell-20261110-613cd7a2.json).
+The [Scala parser report](artifacts/source_validation/scala-parser-e26b43a8a33145028ca1d10119d39057.json)
+records its exact24-source syntax snapshot and empty diagnostics.
+No historical test/build result is reused as validation of these final sources.
+
+The Scala ranking design explicitly samples up to100 validation users and100
+unseen training negatives per user while including all eligible held-out
+positives. It is not full-catalogue evaluation. Cold candidates receive a
+disclosed train-popularity fallback; the raw fallback scale needs validation.
+Scala genre diversity stays unavailable until actual catalogue metadata is
+joined; the Python metric implementation is provided. Hybrid/ALS trial selection
+must use validation only; final-test reservations remain exclusive and failures
+visible. No protected raw file or application/user identity is manufactured.
+
+The complete local application is still unfinished: genuine neutral/aspect/theme/
+language/sarcasm data,rights,canonical mappings,local model permissions and actual
+CPU/GPU/resume/Spark/quality checks remain prerequisites. Backend/database,
+frontend,chat/voice and full demonstration integration remain phases9-13.
+
+Read [the Phase4-8 file index](documentation/phases4-8/GENERATED_FILES.md) and
+[exact later runbook](documentation/phases4-8/RUNBOOK.md). The next execution work
+continues with environment/final-source Phase2 acceptance,then the legitimate
+NLP inputs and sequential model experiments. No earlier phase is marked complete
+merely because later source files now exist.

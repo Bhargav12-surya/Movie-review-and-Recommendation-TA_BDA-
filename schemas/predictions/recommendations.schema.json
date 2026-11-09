@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Actual hybrid recommendation result",
+  "type": "object",
+  "required": [
+    "recommendations",
+    "eligible_candidate_count",
+    "k",
+    "cold_start"
+  ],
+  "properties": {
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "movie_id",
+          "match_score",
+          "channels",
+          "contributions",
+          "evidence",
+          "score_kind"
+        ],
+        "properties": {
+          "movie_id": {
+            "type": "string"
+          },
+          "match_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "score_kind": {
+            "const": "personalized_match_not_audience_sentiment"
+          },
+          "channels": {
+            "type": "object"
+          },
+          "contributions": {
+            "type": "object"
+          },
+          "evidence": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "eligible_candidate_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "k": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "cold_start": {
+      "type": "boolean"
+    }
+  },
+  "$comment": "Weights and actual factor/catalogue provenance need review; schema validation alone does not establish genuine model outputs."
+}
+

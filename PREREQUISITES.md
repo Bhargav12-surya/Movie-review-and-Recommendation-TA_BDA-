@@ -15,7 +15,15 @@ evidence belongs in IMPLEMENTATION_STATUS.md and generated reports.
 
 ## 1. Current environment and immediate readiness
 
-The root .venv is an isolated **Python 3.11.9** environment. A late manual-install
+**Latest correction, 9 November 2026:** Spark 4.3.0 with bundled Scala 2.13.18
+and an SBT 1.10.7 launcher have now been found at the manually supplied paths
+listed in section 11. Do not reinstall them because earlier snapshots say
+"missing". A later metadata-only observation found torch2.14.1+cu132 and changed
+scientific/NLP versions. The cu130 tensor results below belong to the earlier
+installation. Current runtime compatibility remains to be rechecked by the user;
+source generation does not supply that evidence.
+
+The root .venv is an isolated **Python 3.11.9** environment. An earlier manual-install
 recheck on9 November2026 found NumPy2.4.6,pandas2.3.3,scikit-learn1.9.1,
 PyArrow26.0.1,PyYAML6.0.3,pytest9.2.0 and **torch2.14.1+cu130**. Six scientific/
 test imports and pip check passed. Actual RTX5050 CUDA,FP16 and BF16 tiny tensor
@@ -24,7 +32,7 @@ the earlier pip-only snapshot; no installation was performed by this work.
 See [the actual report](artifacts/environment/manual-install-recheck-20261109-1c28488e.json).
 
 Some earlier analysis/test candidate pins below differ from these new installs.
-The current NLP manifest also targets cu132 while the detected build is cu130.
+At that earlier check the NLP manifest targeted cu132 while the detected build was cu130.
 Both CUDA options are published for Windows PyTorch2.14.1 in the
 [official version guide](https://pytorch.org/get-started/previous-versions/).
 Do not replace working packages or force downgrades just to apply an older
@@ -525,3 +533,42 @@ not trigger downloads. Core inference requires no paid API.
 The user performs all installations. Ordinary authorized source edits/tests
 continue within the current phase; missing later prerequisites do not justify
 skipping phase gates or claiming the complete application works.
+
+## 11. Manual-install follow-up and next verification
+
+Observed9 November2026,Asia/Calcutta. Do not install duplicate Spark/SBT tools:
+
+| Existing tool | Project setting | Required later check |
+|---|---|---|
+| JDK21.0.12.1+1 | C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot | Explicit java/javac version and selected child JAVA_HOME |
+| Spark4.3.0/Hadoop3.5.0/Scala2.13.18 | spark.home=C:/spark/spark-4.3.0-bin-hadoop3 | Final-source offline build, real Parquet/runtime smoke and full batch reconciliation |
+| SBT1.10.7 launcher | sbt.home=C:/Program Files (x86)/sbt | Boot/build dependency resolution is a separate manual acquisition/approval step |
+
+Those homes are recorded in configs/environment.json. Discovery order is an
+explicit command argument, then its named environment variable, then project
+configuration. PATH need not be changed to use the project scripts. A standalone
+Scala installation is unnecessary when the matching bundled compiler suffices.
+SBT presence is not proof of cached ScalaTest dependencies or an executed build.
+
+The latest metadata observation shows torch2.14.1+cu132 rather than the earlier
+tested cu130 build, plus changed scientific package versions and newly present
+Transformers4.57.3. See ENVIRONMENT_AUDIT.md section14 for the full scoped list.
+Keep the user's requirements/requirements-nlp.txt unchanged; do not force older
+candidate versions over the manual installation. Requirements remain a declared
+plan, not a tested lock. Datasets,Sentence Transformers and JupyterLab were still
+missing in that snapshot. Install only the approved next-phase subset manually
+after reviewing its resolution; no install command is executed by this handoff.
+
+Later verification, from the repository root:
+
+~~~powershell
+.\scripts\verify_environment.ps1 -Profile Foundation -Json
+.\scripts\verify_environment.ps1 -Profile Spark -Json
+.\scripts\run_spark_jobs.ps1 -Job preflight -Json
+.\.venv\Scripts\python.exe -m pip check
+~~~
+
+Use the explicit interpreter and actual CUDA/AMP verification documented above
+for the changed cu132 build. These commands are future actions, not checks run
+in the current file-generation scope. Source-only syntax validation does not
+certify native package ABI, CUDA kernels, checkpoint resume or model quality.

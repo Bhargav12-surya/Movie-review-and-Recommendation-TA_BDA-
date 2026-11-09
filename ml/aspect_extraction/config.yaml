@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "task": "aspect_extraction",
+  "workspace": null,
+  "output_dir": "models/aspect_extraction/run-001",
+  "approval_path": null,
+  "dataset_review_path": null,
+  "taxonomy_path": "configs/data/annotations.json",
+  "language_scope": ["en", "hi", "hi-Latn", "mul"],
+  "data": {
+    "format": "annotated_reviews",
+    "source_root": "data/processed/annotations",
+    "canonical_registry_path": null,
+    "provenance_path": null,
+    "manifests": {"train": null, "tuning": null, "calibration": null, "test": null},
+    "group_by_movie": true,
+    "maximum_records_per_split": 10000,
+    "maximum_inline_bytes": 67108864
+  },
+  "model": {"local_path": null, "permission_path": null},
+  "tokenization": {
+    "maximum_sequence_length": 128,
+    "stride": 32,
+    "maximum_windows_per_review": 128,
+    "maximum_training_rows": 30000
+  },
+  "training": {
+    "device": "cuda", "precision": "auto", "epochs": 2,
+    "micro_batch_size": 2, "gradient_accumulation_steps": 8,
+    "maximum_updates": 1000, "checkpoint_every_updates": 200,
+    "maximum_checkpoint_count": 8, "learning_rate": 0.00002,
+    "weight_decay": 0.01, "warmup_ratio": 0.1, "patience": 2,
+    "seed": 42, "num_workers": 0, "gradient_checkpointing": true,
+    "gradient_clip": 1.0
+  },
+  "resources": {"minimum_disk_free_gib": 20, "minimum_available_memory_mib": 3072}
+}

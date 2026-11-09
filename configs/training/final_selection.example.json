@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "reviewed_by": null,
+  "reviewed_at": null,
+  "model_frozen": false,
+  "selected_for_final_test": false,
+  "task": null,
+  "model_sha256": null,
+  "model_manifest_sha256": null,
+  "manifest_hashes": {},
+  "selection_basis": null,
+  "note": "Copy to the actual run directory as selection.json after tuning and calibration. TF-IDF requires model_sha256 from training_report.json; Transformer requires model_manifest_sha256. Fill genuine frozen manifest hashes. This example is not approval."
+}

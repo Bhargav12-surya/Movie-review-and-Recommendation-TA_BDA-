@@ -15,7 +15,8 @@ grid, dataset acquisition or model download starts automatically.
 
 - train.py: explicit preflight or approved fitting; train-only vocabulary/IDF,
   CPU LR/SVM, tuning metrics and separate calibration.
-- evaluate.py: frozen-artifact evaluation with matching manifest hashes; test
+- evaluate.py: frozen-artifact evaluation with matching manifest hashes and
+  explicit language/script/cohort metrics, including observed class support; test
   requires a reviewed selection record and exclusive one-attempt reservation.
 - predict.py: bounded JSON reconstruction and numeric inference; no pickle or
   joblib deserialization, lexicon fallback or invented neutral probability.
@@ -130,3 +131,9 @@ Use accuracy, per-class precision/recall/F1, macro/weighted-F1, confusion matrix
 NLL, multiclass Brier and ECE with its documented15 equal-width bins. Save real
 latency/resource observations during later executed validation. None are claimed
 by generating these files.
+
+Cohort reports use only the explicit annotation/source metadata supplied with
+each review. They may overlap; missing annotations do not imply absence of
+sarcasm, code mixing, emojis or any language. Full task labels remain fixed in
+cohort confusion matrices, and per-class support exposes missing classes. No
+text-based heuristic manufactures a cohort or subgroup performance claim.

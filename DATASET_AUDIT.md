@@ -1,5 +1,11 @@
 # Dataset audit
 
+Latest follow-up,9 November2026 (Asia/Calcutta): the initial audit below is a
+historical snapshot. MovieLens and Stanford IMDb were subsequently supplied and
+fully audited; see section11 and IMPLEMENTATION_STATUS.md for actual evidence.
+The current source-only delivery does not rescan raw data or manufacture missing
+review/annotation inputs. Its stop boundary supersedes the initial audit stop.
+
 Audit date: **8 November 2026**, Asia/Calcutta. Scope: Phase 0 inspection of files already in `D:\BDA_TA`. Final availability: **MovieLens 32M was placed locally during the audit and is present with its archive, four CSVs, README and checksums. Stanford IMDb, full TMDB snapshots and research annotations remain absent. Historical demonstration data and model artifacts are also present.**
 
 ## 1. Scope, method and limits
@@ -475,3 +481,47 @@ Preprocessing writes new versioned Parquet/JSONL copies under `silver`, `gold` o
 - [ ] Obtain approval for implementation/dependency setup; no preprocessing, training or package installation has begun.
 
 **Stop after the Phase 0 audit documents are reviewed. Dataset acquisition remains the user's responsibility.**
+
+## 11. Executed Phase 1 evidence and Phase 3 input handoff
+
+Reported9 November2026,Asia/Calcutta. These are earlier completed local audit
+results, not measurements invented or rerun for file generation:
+
+| Source | Executed evidence | Remaining limitation |
+|---|---|---|
+| MovieLens32M | Four raw CSV MD5s match;32,000,204ratings,2,000,072tags,87,585movies,200,948rating users |36 duplicated TMDB groups/72 rows,124missingTMDB; no canonical identity approval |
+| IMDb |100,000source reviews; supervised train19,521,validation5,328,official test25,000;151excluded training references;50,000unsupervised |Binary only; no app movie mapping or genuine neutral/Hindi/sarcasm labels; source permission review still required |
+| First-party/licensed reviews,manual annotations,TMDB snapshots |Last bounded inventory found zero substantive files in those designated source folders |No legitimate movie-linked training/evaluation/audience evidence can be inferred from placeholders |
+
+MovieLens issues include six whitespace-only tags,7,080missing-genre markers
+and3,153tag-only movies without ratings. These are explicit cleaning/cold-start
+inputs, not reasons to fabricate metadata. Provisional mapping outputs retain
+null canonical IDs and quarantine the72 conflicting external relationships.
+
+The IMDb independent verification reported complete reference/hash/coverage
+checks and zero retained cross-split group/normalized-text/source-movie overlaps.
+The original audit found123exact/normalized labelled cross-split groups and one
+source-movie overlap whose training references were excluded. Near-duplicate
+search limitations remain documented; zero measured overlap is not a universal
+semantic leakage guarantee. Test text was not used to train or tune a model.
+
+Evidence:
+
+- [MovieLens full audit](artifacts/data_quality/movielens-20261108T152814Z-34bd388b/report.json).
+- [Provisional mapping outputs](artifacts/data_quality/movie-map-20261108T153013Z-8a93b553/).
+- [IMDb full audit and reference manifests](artifacts/data_quality/imdb-20261108-full-fe07af53/).
+- [Independent IMDb manifest verification](artifacts/data_quality/imdb-manifest-verification-20261109-bdf9f8fa/manifest_verification.json).
+
+Phase3 source now requires separate train,tuning,calibration,test roles. The
+generated scripts/prepare_sentiment_splits.py divides whole groups from the
+verified validation references into two fresh files; it has not been executed.
+It never reads review text,modifies raw files or changes official train/test.
+The supervised loader rejects unsup and requires official labelled path/class
+agreement. Training/calibration/evaluation have not occurred in this delivery.
+
+Human domain manifests additionally require approved canonical IDs,adjudicated
+real labels,consent/license records and frozen leakage groups. The language
+addendum and schema document English/Hindi/Romanized Hindi/Hinglish,sarcasm and
+cohort metadata. Unresolved labels/languages stay in annotation review rather
+than being silently relabelled. Phase1 acceptance remains partial until its
+rights,mapping and annotation conditions are actually met.

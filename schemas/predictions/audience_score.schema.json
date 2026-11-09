@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Evidence-qualified audience score snapshot",
+  "type": "object",
+  "required": [
+    "movie_id",
+    "score",
+    "review_count",
+    "effective_review_count",
+    "method_version",
+    "model_version",
+    "snapshot_sha256",
+    "updated_at"
+  ],
+  "properties": {
+    "movie_id": {
+      "type": "string"
+    },
+    "score": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 100
+    },
+    "review_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "distinct_reviewers": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "effective_review_count": {
+      "type": "number",
+      "minimum": 0
+    },
+    "message": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "method_version": {
+      "type": "string"
+    },
+    "model_version": {
+      "type": "string"
+    },
+    "snapshot_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "$comment": "Python enforces genuine calibrated eligibility, latest revisions, minimum distinct/effective support and separate audience/target scope. A prior is not audience evidence."
+}
+

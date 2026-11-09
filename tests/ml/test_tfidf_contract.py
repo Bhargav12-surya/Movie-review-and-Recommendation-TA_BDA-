@@ -44,6 +44,19 @@ class TfidfContracts(unittest.TestCase):
         self.assertGreater(values[1][0], values[1][1])
         self.assertTrue(all(abs(sum(row) - 1.0) < 1e-12 for row in values))
 
+    def test_cohort_support_uses_only_explicit_metadata_and_aligned_outputs(self):
+        from types import SimpleNamespace
+        from ml.sentiment_tfidf.evaluate import cohort_metrics
+        records = [SimpleNamespace(metadata={"language_code": "hi-Latn", "cohorts": ["sarcastic"]}),
+                   SimpleNamespace(metadata={})]
+        values = [[0.8, 0.2], [0.1, 0.9]]
+        result = cohort_metrics(records, [0, 1], values, ["negative", "positive"])
+        self.assertEqual(set(result), {"language:hi-Latn", "sarcastic"})
+        self.assertEqual(result["sarcastic"]["count"], 1)
+        self.assertEqual(result["sarcastic"]["per_class"]["positive"]["support"], 0)
+        with self.assertRaises(ValueError):
+            cohort_metrics(records, [0], values, ["negative", "positive"])
+
 
 if __name__ == "__main__":
     unittest.main()

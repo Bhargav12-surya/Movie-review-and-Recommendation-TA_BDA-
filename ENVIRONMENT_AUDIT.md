@@ -1,10 +1,11 @@
 # Environment Audit — Movie Review & Recommendation System
 
-Latest follow-up,9 November2026 (Asia/Calcutta): the original Phase0 findings
-below are historical. The user subsequently prepared the root3.11 environment.
-Scientific package imports and actual PyTorch CUDA/precision checks now pass;
-Spark/SBT and later framework prerequisites remain missing. See the dated
-follow-up at the end and IMPLEMENTATION_STATUS.md for current evidence.
+Latest follow-up, 9 November 2026 (Asia/Calcutta): the original Phase 0 findings
+below are historical. The user prepared root Python 3.11 and subsequently
+installed Spark/SBT at explicit paths. A prior cu130 tensor/precision check
+passed; newer cu132 package metadata needs a new runtime check. See section 14
+and IMPLEMENTATION_STATUS.md. The current delivery generates files and performs
+static checks only; it does not verify the changed environment by executing jobs.
 
 Audit date: **8 November 2026, Asia/Calcutta**. Workspace: `D:\BDA_TA`. Scope: Phase 0 inspection and planning only. Status: **audit complete; implementation and installation await user approval**.
 
@@ -322,3 +323,43 @@ requires real Spark compilation,ScalaTest and Windows Parquet/streaming runs.
 Evidence: [full manual-install recheck](artifacts/environment/manual-install-recheck-20261109-1c28488e.json),
 [Phase2 toolchain audit](documentation/bda/LOCAL_TOOLCHAIN_AUDIT.md),
 [current implementation status](IMPLEMENTATION_STATUS.md).
+
+## 14. Subsequent manual installations and source-only handoff
+
+Observed 9 November 2026, Asia/Calcutta. This supersedes the earlier claims that
+Spark/SBT were absent in checked locations. The user installed these tools; no
+installer, resolver, upgrade or PATH/global-variable mutation was run here.
+
+| Tool | Newly observed location/version | Evidence and limit |
+|---|---|---|
+| JDK | C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot; 21.0.12.1+1 | Used by the earlier offline compiler |
+| Spark | C:\spark\spark-4.3.0-bin-hadoop3; 4.3.0 | RELEASE says Hadoop3.5.0; 279 bundled JARs inspected |
+| Scala | 2.13.18 bundled compiler/library/reflect | Matches the configured Spark/Scala source target |
+| SBT | C:\Program Files (x86)\sbt; launcher default1.10.7 | Launcher files found; SBT was not bootstrapped or executed |
+
+Spark and SBT were not on the checked process PATH. configs/environment.json
+now records their homes, and source discovery accepts explicit arguments, named
+environment variables or those configured paths. A global PATH edit or duplicate
+installation is unnecessary. Discovery code and its new tests are generated;
+only their syntax has been checked in the file-only scope.
+
+Before the file-only instruction, all15 main Scala files compiled against the
+installed distribution and were packaged without SBT resolution. The report is
+[the successful offline build](artifacts/scala-build/20261109T082431Z-6ca44eba/build_report.json).
+Later CSV quoting/deletion-flag source edits have not been recompiled. ScalaTest,
+Spark runtime, Parquet, full32M processing and streaming remain unexecuted.
+
+A later package-metadata observation found torch2.14.1+cu132,NumPy2.2.6,
+scikit-learn1.7.2,PyArrow22.0.0,Transformers4.57.3,Accelerate1.11.0,
+tokenizers0.22.1,safetensors0.6.2 and huggingface-hub0.36.0. Datasets,
+Sentence Transformers and JupyterLab were absent in that snapshot. This was
+metadata evidence, not fresh native imports or GPU operations. It supersedes
+the package listing in section13 as current metadata; the successful cu130 CUDA
+report remains historical evidence for its exact earlier installation.
+
+Recheck the current cu132 build and changed scientific stack before training.
+No manually supplied model weights were found in the scoped model/cache paths;
+no weights were downloaded. The last resource snapshot was about49.147GiB free
+disk and less than2GiB available RAM, below the default Spark headroom guard.
+These values are not current readiness guarantees. The user's current scope is
+file generation with static validation; new runtime probes are deferred.

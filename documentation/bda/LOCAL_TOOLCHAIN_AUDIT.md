@@ -3,6 +3,18 @@
 Observed on 9 November 2026, Asia/Calcutta. This supplements the original
 Phase 0 audit; it does not rewrite that historical measurement.
 
+Latest correction: the table below describes the earlier cache-only inspection.
+The user subsequently installed Spark at C:\spark\spark-4.3.0-bin-hadoop3 and SBT
+at C:\Program Files (x86)\sbt. Spark's RELEASE/JARs identify4.3.0,Hadoop3.5.0,
+Scala2.13.18; the SBT launcher's default is1.10.7. Before the file-only instruction,
+all15 main sources compiled using the279 distribution JARs without a resolver.
+See [build evidence](../../artifacts/scala-build/20261109T082431Z-6ca44eba/build_report.json).
+The thin JAR is in that build folder, not the default SBT target path. Later CSV
+quote/deletion-flag edits remain uncompiled. ScalaTest and Spark runtime remain
+pending. Project-local discovery settings now identify these homes; no global
+PATH change or duplicate install is needed. Their new source/tests have received
+static checks only in the current file-generation scope.
+
 | Component | Observed result | Meaning |
 |---|---|---|
 | Root Python | Existing isolated3.11.9; scientific packages appeared through manual setup; stdlib scripts execute | No further Python package installation needed for current validators/launcher |

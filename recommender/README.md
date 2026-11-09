@@ -1,0 +1,4 @@
+# Hybrid recommendation source
+
+Actual Scala MLlib ALS trains source MovieLens users/items. Python loads hash-verified numeric Parquet factors, requiring an approved canonical mapping. Application users use explicit content/genre/theme preferences and consented history; they never borrow numeric source-user factors. Optional ALS-WR fold-in requires an approved method and sufficient real ratings. Full eligible-candidate normalization precedes bounded diversity reranking; explanations expose actual channel inputs. Weights must be validation-selected. Evaluation reports fixed K precision,recall,NDCG,coverage,genre diversity and train-only smoothed novelty,including empty/cold lists. Sampled Scala ranking is explicitly reported as sampled,not full-catalogue. See documentation/phases4-8/RUNBOOK.md. No fitting or ranking has run.
+

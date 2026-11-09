@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Adjudicated complete explicit-aspect review manifest record",
+  "type": "object",
+  "required": ["split", "group_id", "review_id", "review_revision", "movie_id", "review_text", "text_sha256", "sentiment", "label_schema_version", "taxonomy_version", "aspect_schema_version", "aspects_complete", "aspects", "language_code", "annotation_status", "annotator_id", "adjudicator_id", "annotation_guideline_version", "training_permitted", "consent_or_license_ref"],
+  "properties": {
+    "split": {"enum": ["train", "tuning", "calibration", "test"]},
+    "group_id": {"type": "string", "minLength": 1},
+    "review_id": {"type": "string", "minLength": 1},
+    "review_revision": {"type": "integer", "minimum": 1},
+    "movie_id": {"oneOf": [{"type": "string", "minLength": 1}, {"type": "integer", "minimum": 1}]},
+    "review_text": {"type": "string", "minLength": 1},
+    "text_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "sentiment": {"enum": ["negative", "neutral", "positive", 0, 1, 2]},
+    "label_schema_version": {"const": "sentiment-three-class-v1"},
+    "taxonomy_version": {"const": "movie-aspects-v1"},
+    "aspect_schema_version": {"const": "explicit-aspect-spans-v1"},
+    "aspects_complete": {"const": true},
+    "aspects": {"type": "array", "maxItems": 256, "items": {"$ref": "#/$defs/gold_aspect"}},
+    "language_code": {"enum": ["en", "hi", "hi-Latn", "mul"]},
+    "languages": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "script": {"enum": ["Latin", "Devanagari", "Mixed", "Other", "unknown"]},
+    "cohorts": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "reviewer_group_id": {"type": "string", "minLength": 1},
+    "normalized_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "annotation_status": {"const": "adjudicated"},
+    "annotator_id": {"type": "string", "minLength": 1},
+    "adjudicator_id": {"type": "string", "minLength": 1},
+    "annotation_guideline_version": {"type": "string", "minLength": 1},
+    "training_permitted": {"const": true},
+    "consent_or_license_ref": {"type": "string", "minLength": 1},
+    "is_synthetic": {"const": false},
+    "synthetic": {"const": false},
+    "is_deleted": {"const": false},
+    "consent_withdrawn": {"const": false}
+  },
+  "$defs": {
+    "category": {"enum": ["acting", "story", "screenplay", "direction", "characters", "cinematography", "visual_effects", "editing", "pacing", "music", "sound_design", "dialogue", "worldbuilding", "emotional_impact", "originality", "runtime"]},
+    "gold_aspect": {
+      "type": "object",
+      "required": ["aspect", "start", "end", "text", "sentiment"],
+      "properties": {
+        "aspect": {"$ref": "#/$defs/category"},
+        "start": {"type": "integer", "minimum": 0},
+        "end": {"type": "integer", "minimum": 1},
+        "text": {"type": "string", "minLength": 1},
+        "sentiment": {"enum": ["negative", "neutral", "positive"]},
+        "implicit": {"const": false}
+      }
+    }
+  },
+  "$comment": "An empty aspects array is allowed only because aspects_complete=true explicitly certifies complete annotation. Python additionally validates original SHA256, exact Unicode code-point [start,end) substrings, nonoverlap, canonical registry, consent/source eligibility, task class support and cross-split groups. This schema does not prove authenticity, rights, tokenizer representability or model suitability."
+}

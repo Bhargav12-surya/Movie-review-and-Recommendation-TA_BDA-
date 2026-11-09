@@ -1,0 +1,11 @@
+{
+  "training_approved": false,
+  "source_permission_reviewed": false,
+  "split_reviewed": false,
+  "approved_by": null,
+  "run_id": null,
+  "config_sha256": null,
+  "model_frozen": false,
+  "final_test_approved": false
+}
+

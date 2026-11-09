@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "task": "themes",
+  "workspace": null,
+  "output_dir": "models/themes/run-001",
+  "approval_path": null,
+  "dataset_review_path": null,
+  "language_scope": [
+    "en",
+    "hi",
+    "hi-Latn",
+    "mul"
+  ],
+  "data": {
+    "canonical_registry_path": null,
+    "provenance_path": null,
+    "manifests": {
+      "train": null,
+      "tuning": null,
+      "calibration": null,
+      "test": null
+    }
+  },
+  "model": {
+    "local_path": null,
+    "permission_path": null
+  },
+  "tokenization": {
+    "maximum_sequence_length": 128
+  },
+  "training": {
+    "device": "cuda",
+    "precision": "auto",
+    "epochs": 2,
+    "micro_batch_size": 2,
+    "gradient_accumulation_steps": 8,
+    "maximum_sequence_length": 128,
+    "maximum_updates": 1000,
+    "checkpoint_every_updates": 200,
+    "maximum_checkpoint_count": 8,
+    "learning_rate": 0.00002,
+    "weight_decay": 0.01,
+    "warmup_ratio": 0.1,
+    "gradient_clip": 1,
+    "patience": 2,
+    "seed": 42,
+    "num_workers": 0,
+    "gradient_checkpointing": true
+  },
+  "resources": {
+    "minimum_disk_free_gib": 20,
+    "minimum_available_memory_mib": 3072
+  }
+}
+

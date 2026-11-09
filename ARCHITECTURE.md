@@ -3924,3 +3924,133 @@ The project remains fully feasible on this laptop if the implementation follows 
 6. Load only the inference models needed for each application session.
 
 The project does not require a paid cloud GPU for its core academic implementation. A cloud GPU may be an optional acceleration path, but the primary training and demonstration workflow must remain reproducible on the local laptop.
+
+---
+
+# 33. Mandatory language and informal-review extension
+
+User-supplied requirement, 9 November 2026 (Asia/Calcutta). This addendum makes
+language-aware review processing part of the existing project. It supersedes
+earlier optional multilingual scope where it conflicts. It does not establish
+that any model has been trained or validated. The original sections above are
+retained; their automatic acquisition commands remain overridden by the user's
+manual-download/manual-install rules.
+
+## 33.1 Scope and execution order
+
+The extension covers English, Hindi Devanagari, Romanized Hindi and Hinglish or
+code-switched movie reviews, including slang, emojis/emoticons, expressive
+punctuation, repetitions, negation, contrast and sarcasm. Support must be bounded
+by genuine annotation coverage and held-out subgroup results. Script detection
+alone is not language recognition. No universal slang/emoji polarity table or
+sarcasm-based polarity reversal may substitute for a trained classifier.
+
+The original integration gate follows actual Phase 2 Spark acceptance. The
+user's later instruction, "just generate files, i implement later", separately
+authorizes preparation of Phase 3/extension source and notebooks before that
+gate. Current verification is static only. Phase 2 runtime evidence and Phase 3
+data/model/approval requirements remain open; source generation is not phase
+completion. Later aspects, summaries, scores, APIs and UI follow phases 4-13.
+
+## 33.2 Data and text contracts
+
+Keep immutable original Unicode text, its SHA256, genuine canonical movie ID,
+review revision and permission record. Store normalization/transliteration as
+separate views with character alignment into the original. Aspect spans use
+Unicode code-point [start,end) offsets; browser UTF-16 positions require explicit
+conversion. Preserve combining marks, emoji sequences and expressive text.
+
+Humans annotate language/script/code-switching, sentiment and independent
+sarcasm labels. Neutral is a real class under an adjudicated policy; uncertainty,
+mixed polarity and unsupported language require distinct metadata. IMDb remains
+an English binary benchmark with no invented neutral or application movie IDs.
+Its unlabelled reviews are not supervised binary examples. Partition legitimate
+data into disjoint train,tuning,calibration,test groups, retaining source/movie,
+reviewer and duplicate grouping appropriate to the approved study question.
+
+The local input contract and missing inputs are documented in
+documentation/dataset/LANGUAGE_ANNOTATION_ADDENDUM.md and
+schemas/datasets/phase3_review_manifest.schema.json. No alternative datasets are
+researched or fetched under this addendum.
+
+## 33.3 Model and source organization
+
+- ml/sentiment_tfidf compares actual train-only BoW/TF-IDF Logistic Regression
+  and Linear SVM with portable fitted-state inference.
+- ml/sentiment_transformer implements local compact English experiments with
+  separate binary IMDb and genuine three-class tasks.
+- ml/multilingual_sentiment reuses the supervised Transformer engine for
+  permission-backed multilingual movie annotations. Candidate model families
+  require license, tokenizer/script and measured 8 GB VRAM review before choice.
+- ml/sarcasm trains an independent human-labelled diagnostic. It never reverses
+  sentiment or claims to be a validated fusion model. A learned fusion/joint
+  experiment remains future work requiring out-of-fold or separately trained
+  signals and an ablation against sentiment alone.
+- ml/informal_language preserves originals and aligned optional text views.
+  Language-ID/transliteration adapters report unavailable when no reviewed
+  trained implementation is supplied. Conservative symbol observations are not
+  complete Unicode emoji grapheme segmentation or sentiment predictions.
+
+Each trainable component has train.py,evaluate.py,predict.py,config.yaml,
+README.md and model_card.md. Shared data/calibration/resource/checkpoint logic
+lives in ml/common. Source remains separate from models/ artifacts. Generated
+notebooks call shared modules and start with experiment execution disabled.
+
+## 33.4 Training, evidence and integration
+
+Before fitting, require reviewed source/model rights, actual labels/EDA/leakage
+checks, frozen manifest/config hashes and explicit run approval. Establish both
+classical baselines on the same task/splits first. Load only user-supplied local
+safetensors/tokenizer files with remote code disabled. Train one substantial
+model at a time with measured CUDA/AMP compatibility, bounded batches/sequence
+length, accumulation and Windows zero-worker loaders.
+
+Owned checkpoints bind model/optimizer/scheduler/scaler/RNG/progress to exact
+config,data and frozen base/tokenizer/text-view hashes. Actual reload/resume
+equivalence remains an acceptance test. Select on tuning data, calibrate on a
+different held-out calibration subset, freeze selection and reserve final-test
+execution once. Record accuracy,macro/per-class F1,confusion matrix,NLL,Brier,ECE,
+language/cohort support,latency and measured RAM/VRAM. Calibration-set results
+are fit diagnostics, not unbiased held-out confidence estimates.
+
+Evaluate English,Hindi,Romanized Hindi,Hinglish,slang/emoji-heavy,sarcastic and
+mixed-aspect cohorts only where human-labelled evidence exists. Compare actual
+same-task/split reports; do not report generated templates as model results.
+Language scope in configuration is a requested experiment scope, not demonstrated
+capability. Review failures and unsupported languages remain explicit. Model
+promotion and actual backend/UI integration belong to their later phases.
+
+See documentation/architecture/NLP_EXTENSION_AFTER_PHASE_2.md,
+documentation/phase3/RUNBOOK.md and IMPLEMENTATION_STATUS.md for scope and
+evidence. This addendum records the user's supplied requirement rather than
+silently changing the product or claiming completed implementation.
+
+---
+
+# 34. Source-preparation ledger through Phase 8
+
+User instruction,10 November2026 (Asia/Calcutta): generate files through Phase8
+in one pass for later implementation/execution. This extends source preparation
+only. The fourteen-phase execution order,manual acquisition/training restrictions
+and all acceptance criteria remain in force. No API,frontend,chatbot or deployment
+is claimed from this batch.
+
+The source connects explicit aspect extraction and target polarity to versioned
+evidence contracts; theme relevance stays distinct from target reception;
+summarization retrieves eligible movie snapshots and requires factuality review
+of new generated claims; review risk excludes sentiment and remains moderation
+support; audience scores enforce reviewed minimum evidence before shrinkage;
+recommendations use actual Scala ALS factors and content/preferences with separate
+source/app identities. Model/input/method versions remain explicit throughout.
+
+Concrete initial experiments are documented rather than silently treated as
+scientific findings: train-only LDA is exploratory; pretrained embedding/summary
+inference is not local fine-tuning; aspect token confidence is uncalibrated;
+scoring thresholds/prior are unset pending evidence review; optional app-user
+fold-in needs methodological approval; sampled ALS ranking is not full-catalogue
+performance. Scala scoring parity,streaming publication,all model/retrieval/risk/
+recommendation evaluation and actual deployment remain unexecuted acceptance work.
+
+See documentation/phases4-8/RUNBOOK.md,its generated-file index and
+IMPLEMENTATION_STATUS.md for precise source paths,current blockers and later
+commands. A static source check is not a model result or an integrated application.

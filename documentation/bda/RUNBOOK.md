@@ -9,10 +9,14 @@ training, downloads, installations or changes to the mandatory stack.
 
 ## Actual state
 
-Source implementation and offline checks are available. Spark/SBT and the
-project JAR are absent. Therefore ScalaTest, actual Spark compilation, full
-MovieLens Parquet outputs, streaming execution, native Windows filesystem
-compatibility and Spark UI evidence have NOT passed. Phase 2 remains open.
+Source implementation and earlier offline checks are available. Spark4.3.0
+and an SBT1.10.7 launcher were subsequently found at manually installed paths.
+An earlier snapshot of all15 main Scala sources compiled against279 installed
+distribution JARs and produced a thin JAR without SBT. Later CSV quote/deletion
+flag edits have not been recompiled. ScalaTest, full MovieLens Parquet outputs,
+streaming execution, native Windows filesystem compatibility and Spark UI
+evidence have NOT passed. Phase2 remains open. The current user scope is file
+generation only, so commands below are for later manual execution.
 
 Manual prerequisites and official links are in [PREREQUISITES.md](../../PREREQUISITES.md).
 Do not invoke SBT merely to inspect its version: it can bootstrap and resolve
@@ -20,9 +24,9 @@ dependencies. No script in this phase installs or builds anything automatically.
 
 ## Manual preparation and execution order
 
-1. User installs/prepares SBT 1.10.7 and the matching Spark 4.3.0 distribution
-   with Scala 2.13.18 and the documented Hadoop baseline. Keep the existing
-   JDK 21; a second standalone Scala installation is unnecessary.
+1. Verify the existing configured Spark4.3.0/Scala2.13.18/Hadoop3.5.0 distribution
+   and SBT1.10.7 launcher. Do not reinstall them because older reports say missing.
+   Keep JDK21; a second standalone Scala installation is unnecessary.
 2. User manually supplies approved build dependencies/cache. Reading this
    document or running preflight does not authorize SBT network resolution.
 3. After manual preparation, re-run environment verification. Free enough
@@ -57,6 +61,18 @@ that is an expected blocker, not a successful job.
 
 ### Build and test only after manual dependency preparation
 
+For a resolver-free rebuild of main source using the installed distribution:
+
+~~~powershell
+.\.venv\Scripts\python.exe -I -B scripts/build_scala_offline.py --spark-home 'C:\spark\spark-4.3.0-bin-hadoop3' --output 'artifacts/scala-build/manual-final-001'
+~~~
+
+Choose a fresh output. Review build_report.json and source hashes; this compiler
+does not run ScalaTest or Spark. Pass its exact new thin JAR with -JarPath to the
+launcher, because its default path is the SBT package location. Do not use the
+older compiled artifact to claim validation of later edited source. The build
+script and later discovery edits still need their documented manual checks.
+
 These are instructions for the user's prepared shell; they have not run here.
 JAVA_HOME below changes only that shell, not Windows global configuration.
 If the dependencies are absent, stop; do not turn this into an unapproved fetch.
@@ -65,7 +81,7 @@ If the dependencies are absent, stop; do not turn this into an unapproved fetch.
 $env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot'
 $env:PATH = (Join-Path $env:JAVA_HOME 'bin') + ';' + $env:PATH
 Set-Location -LiteralPath 'D:\BDA_TA\scala'
-sbt -Dsbt.offline=true 'set offline := true' test package
+& 'C:\Program Files (x86)\sbt\bin\sbt.bat' -Dsbt.offline=true 'set offline := true' test package
 Set-Location -LiteralPath 'D:\BDA_TA'
 ~~~
 
@@ -80,8 +96,8 @@ Replace the SparkHome example with the actual manually installed directory.
 Choose a fresh output name each time; do not overwrite failed or prior runs.
 
 ~~~powershell
-.\scripts\run_spark_jobs.ps1 -Job smoke -SparkHome 'D:\Tools\spark-4.3.0-bin-hadoop3' -DriverMemory 1g -OutputPath 'artifacts/spark-smoke-001' -Json
-.\scripts\run_spark_jobs.ps1 -Job batch -SparkHome 'D:\Tools\spark-4.3.0-bin-hadoop3' -DriverMemory 3g -OutputPath 'data/processed/spark/batch-001' -HoldUiSeconds 120 -Json
+.\scripts\run_spark_jobs.ps1 -Job smoke -SparkHome 'C:\spark\spark-4.3.0-bin-hadoop3' -JarPath 'artifacts/scala-build/manual-final-001/movieintel-spark_2.13-0.1.0.jar' -DriverMemory 1g -OutputPath 'artifacts/spark-smoke-001' -Json
+.\scripts\run_spark_jobs.ps1 -Job batch -SparkHome 'C:\spark\spark-4.3.0-bin-hadoop3' -JarPath 'artifacts/scala-build/manual-final-001/movieintel-spark_2.13-0.1.0.jar' -DriverMemory 3g -OutputPath 'data/processed/spark/batch-001' -HoldUiSeconds 120 -Json
 ~~~
 
 For a separate RDD demonstration use Job rdd with a new output. It performs the

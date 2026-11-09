@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "eda_reviewed": false,
+  "duplicate_leakage_reviewed": false,
+  "baseline_reviewed": false,
+  "reviewed_by": null,
+  "manifest_hashes": {},
+  "baseline_report_path": null,
+  "note": "Fill only after inspecting actual frozen data distributions,duplicates/leakage and a computed task baseline. This template is not an approval."
+}

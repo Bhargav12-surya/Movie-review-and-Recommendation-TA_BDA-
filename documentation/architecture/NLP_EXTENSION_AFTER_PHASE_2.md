@@ -7,10 +7,13 @@ weights, datasets or language services are fetched by recording this plan.
 
 ## Timing and specification updates
 
-After Phase 2 passes its execution/evidence gate, update ARCHITECTURE.md,
-IMPLEMENTATION_PLAN.md and AGENTS.md with this extension and a versioned Phase 1
-language/annotation addendum. Preserve completed work and original audit
-snapshots. Record actual progress in IMPLEMENTATION_STATUS.md.
+Originally scheduled for integration after the Phase 2 execution/evidence gate.
+The user's later instruction, "just generate files, i implement later", permits
+Phase 3 and extension source/specification preparation while that runtime gate
+remains open. ARCHITECTURE.md section 33, IMPLEMENTATION_PLAN.md, AGENTS.md and
+the language/annotation addendum now record this narrow source-only scope.
+Preserve original audit snapshots. Runtime acceptance still follows Phase 2;
+source presence is not acceptance. Record evidence in IMPLEMENTATION_STATUS.md.
 
 Do not skip missing-data, environment, license or training-approval gates.
 The present English binary benchmark remains a separate baseline.
@@ -91,7 +94,14 @@ memory monitoring. Downloads and substantial training need separate approval.
 
 ## Current status
 
-Requirement accepted and queued. No multilingual/sarcasm model is trained,
-selected,downloaded or integrated yet. Existing Phase 1 validators already retain
-original Unicode text and code-point span offsets; this does not establish
-Hindi/Hinglish sentiment capability.
+Requirement accepted; source and experiment notebooks generated under the
+file-only scope. No multilingual/sarcasm model is trained, selected, downloaded
+or deployed. The generated classifier loop uses local reviewed pretrained
+artifacts and genuine task-specific annotations; language detection and
+transliteration expose optional adapter contracts and explicitly report absence.
+Sarcasm is an independent diagnostic. A learned sentiment/sarcasm fusion model
+and its ablation remain future work requiring out-of-fold training signals and
+separate validation; diagnostic attachment must not be claimed as learned fusion.
+Conservative script/symbol observations and original-offset preservation do not
+establish Hindi/Hinglish sentiment capability. Later multilingual aspect,
+summarization, API/UI and integration obligations remain in their own phases.

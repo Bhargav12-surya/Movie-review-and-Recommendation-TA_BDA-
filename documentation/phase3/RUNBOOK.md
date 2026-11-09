@@ -85,6 +85,13 @@ pass the same validation file for both roles. Domain/sarcasm manifests need
 reviewed train,tuning,calibration,test roles,group IDs,original text hashes and an
 approved canonical registry. No movie IDs are inferred from IMDb reviews.
 
+The IMDb loader checks exact official train/neg,train/pos,test/neg,test/pos
+relative paths and matching binary labels; train/unsup is never supervised data.
+Eligibility flags must be JSON booleans. Unknown or missing annotated languages
+stay in annotation review; supervised manifests must use a resolved language in
+the experiment's declared scope. This scope remains a study request, not proof
+of deployment support.
+
 ## Human-labelled annotation additions
 
 The normal movie sentiment map is negative0,neutral1,positive2. IMDb remains
@@ -123,6 +130,15 @@ Unknown/false approvals block training. Both real LR and SVM reports are require
 before Transformer fitting; baseline_reports must reference their training reports
 with the same task and split fingerprints. No source is approved by its filename.
 
+Before the final test, copy final_selection.example.json into the trained run as
+selection.json and fill the genuine reviewer, frozen manifest hashes and
+selection decision. TF-IDF binds model_sha256 from its training report;
+Transformers bind the SHA256 of model_manifest.json. Both require model_frozen
+and selected_for_final_test to be true. The separate final-test reservation is
+exclusive: a failed test attempt remains visible and requires review rather
+than silently running again. Multiple competing runs are a procedural limitation:
+do not inspect test reports and then select or retune another candidate.
+
 Base weights must be supplied as local safetensors with tokenizer/config files.
 Model code uses local_files_only=true,trust_remote_code=false,use_safetensors=true.
 No Hugging Face ID is resolved on the network. Pretrained-only weights are not
@@ -160,6 +176,11 @@ actual equivalence testing before claiming bitwise reproducibility. GPU kernels
 and package changes may still be nondeterministic. No automatic OOM retry,
 dependency install,CPU training fallback or checkpoint deletion is performed.
 
+The run freezes input_contract.json, including reviewed base/tokenizer hashes,
+model-permission hash and the resolved text view. Checkpoints bind that contract
+and exact config/data hashes. Changing a slang dictionary, tokenizer or base
+model at an unchanged path must fail resume rather than silently alter inputs.
+
 Checkpoint count/disk budgets stop the run rather than removing prior artifacts.
 Model selection uses tuning macro-F1. The saved final model comes from the best
 tuning epoch; calibration fits a positive temperature by a documented bounded
@@ -167,7 +188,32 @@ one-dimensional search. NLL,Brier and15-bin top-label ECE are calculations, not
 guarantees of reliable confidence. Sarcasm is independent and never reverses
 the sentiment output. Missing/unsupported languages produce explicit status.
 
+The generated sarcasm-context helper attaches a separate trained diagnostic;
+it is not a learned fusion model. A genuine fusion comparison requires a later
+out-of-fold or separately trained joint architecture and dedicated validation.
+Optional language-ID/transliteration adapters and full Unicode emoji grapheme
+segmentation are not implemented as trained capabilities. Keep those limitations
+in academic claims and do not label configured language scope as measured support.
+
+For a fair English-encoder versus multilingual-encoder comparison, use identical
+human-labelled task/manifests and the same declared evaluation-language scope.
+An English-focused architecture can be tested on that multilingual task; its
+name does not guarantee performance or support. Do not compare binary IMDb
+accuracy directly with three-class domain accuracy as if the tasks were equal.
+Freeze each prespecified ablation before test; use tuning reports for selection.
+
 ## Evaluation, tests and outputs
+
+Reproduce static handoff checks without importing models or reading datasets:
+
+~~~powershell
+.\.venv\Scripts\python.exe -I -B scripts/verify_phase3_sources.py
+~~~
+
+This standard-library script parses Python, JSON-subset YAML, schema JSON and
+notebook code, checks mandatory file presence and disabled notebook execution,
+and saves fresh source fingerprints under artifacts/source_validation. It does
+not run unit tests or a JSON Schema semantic validator.
 
 Run the generated tests later:
 

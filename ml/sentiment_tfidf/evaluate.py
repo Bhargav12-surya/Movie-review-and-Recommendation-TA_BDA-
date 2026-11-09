@@ -13,6 +13,31 @@ from ml.common.metrics import classification_metrics
 from .predict import load_model, probabilities
 
 
+def cohort_metrics(records, labels, values, label_names) -> dict:
+    """Score only explicit human/source cohorts; never infer labels from text.
+
+    Cohorts can overlap. Macro-F1 retains the full task label space even when a
+    particular cohort lacks a class, and per-class support makes this visible.
+    """
+    if not (len(records) == len(labels) == len(values)):
+        raise ValueError("Cohort records and actual model outputs must align.")
+    cohorts = {}
+    for index, record in enumerate(records):
+        tags = list(record.metadata.get("cohorts") or [])
+        for key in ("language_code", "script"):
+            supplied = record.metadata.get(key)
+            if supplied is not None:
+                if not isinstance(supplied, str) or not supplied:
+                    raise ValueError("Cohort metadata must be an explicit nonempty annotation string.")
+                tags.append(("language" if key == "language_code" else "script") + ":" + supplied)
+        if any(not isinstance(tag, str) or not tag for tag in tags):
+            raise ValueError("Cohort annotations must be nonempty strings.")
+        for tag in set(tags):
+            cohorts.setdefault(tag, []).append(index)
+    return {tag: classification_metrics([labels[index] for index in indices],
+        [values[index] for index in indices], label_names) for tag, indices in sorted(cohorts.items())}
+
+
 def evaluate(config: dict, run_directory: str | Path, split: str = "tuning", final_test: bool = False) -> dict:
     if split not in {"tuning", "calibration", "test"}:
         raise ValueError("Only frozen tuning/calibration/test roles may be evaluated.")
@@ -39,6 +64,8 @@ def evaluate(config: dict, run_directory: str | Path, split: str = "tuning", fin
         "labels": bundle.labels, "manifest_hashes": bundle.manifest_hashes,
         "model_sha256": model["report"]["model_sha256"],
         "metrics": classification_metrics(labels, values, bundle.label_names),
+        "cohorts": cohort_metrics(bundle.records[split], labels, values, bundle.label_names),
+        "cohort_policy": "Human/source metadata only; cohorts may overlap and absent cohorts establish no language capability.",
         "zero_feature_rows": sum(count == 0 for count in known_features),
         "prediction_policy": "Full classifier evaluation includes zero-feature rows; serving flags them for review.",
         "calibration_scope": "fit_split_diagnostic" if split == "calibration" else "held_out_from_calibration",

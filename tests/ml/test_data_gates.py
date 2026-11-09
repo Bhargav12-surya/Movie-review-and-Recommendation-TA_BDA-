@@ -4,11 +4,39 @@ import tempfile
 import unittest
 from ml.common.artifacts import sha256, write_json
 from ml.common.config import load_config
+from ml.common.data import _imdb_reference_path
 from ml.common.gates import reserve_final_test, training_preflight
 from ml.multilingual_sentiment.sarcasm_context import attach_sarcasm_context
 
 
 class DataGates(unittest.TestCase):
+    def test_imdb_unsupervised_and_wrong_label_paths_are_never_binary_labels(self):
+        with tempfile.TemporaryDirectory(prefix="movieintel-imdb-path-contract-") as folder:
+            source = Path(folder).resolve()
+            for role, source_split, name, label in (
+                ("train", "train", "train/unsup/1_0.txt", 1),
+                ("train", "unsup", "train/pos/1_10.txt", 1),
+                ("tuning", None, "train/pos/1_10.txt", 1),
+                ("calibration", "test", "test/pos/1_10.txt", 1),
+                ("train", "train", "train/neg/1_1.txt", 1),
+                ("test", "train", "train/pos/1_10.txt", 1),
+                ("train", "train", "../train/pos/1_10.txt", 1),
+                ("train", "train", "./train/pos/1_10.txt", 1),
+                ("train", "train", "train\\pos\\1_10.txt", 1),
+            ):
+                with self.subTest(role=role, source_split=source_split, name=name):
+                    with self.assertRaises(ValueError):
+                        _imdb_reference_path({"source_split": source_split, "source_path": name}, role, label, source)
+
+    def test_imdb_valid_reference_needs_existing_official_bucket(self):
+        with tempfile.TemporaryDirectory(prefix="movieintel-imdb-path-contract-") as folder:
+            source = Path(folder).resolve()
+            path = source / "train" / "neg" / "1_1.txt"
+            path.parent.mkdir(parents=True)
+            path.write_text("Synthetic path-only fixture; excluded from real evidence.", encoding="utf-8")
+            result = _imdb_reference_path({"source_split": "train", "source_path": "train/neg/1_1.txt"}, "tuning", 0, source)
+            self.assertEqual(result, path)
+
     def test_empty_config_data_cannot_start_training_or_create_model_output(self):
         root = Path(__file__).resolve().parents[2]
         config = load_config(root / "ml/sentiment_transformer/config.yaml")

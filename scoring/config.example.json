@@ -1,0 +1,11 @@
+{
+  "method_version": "audience-sentiment-v1-proposed",
+  "model_version": null,
+  "minimum_reviews": null,
+  "minimum_distinct_reviewers": null,
+  "minimum_effective_reviews": null,
+  "shrinkage_strength": null,
+  "prior": null,
+  "bootstrap_samples": 300,
+  "seed": 42
+}

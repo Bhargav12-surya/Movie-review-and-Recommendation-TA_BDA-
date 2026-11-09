@@ -1,0 +1,1 @@
+{"schema_version":1,"weights_validated":false,"weights":{"als":null,"semantic":null,"genre":null,"theme":null,"popularity":null},"diversity_penalty":0,"rerank_pool_size":200,"filters":{},"fold_in_method_approved":false,"note":"Fill actual validation-selected values after baselines and temporal validation. Null weights are not usable predictions."}

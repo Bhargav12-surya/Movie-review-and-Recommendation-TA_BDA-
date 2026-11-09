@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Per-review explicit aspect evidence prediction",
+  "type": "object",
+  "required": ["record_id", "aspects"],
+  "properties": {
+    "record_id": {"type": "string", "minLength": 1},
+    "text_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "offset_unit": {"const": "original_unicode_code_points"},
+    "aspects": {"type": "array", "maxItems": 256, "items": {"$ref": "#/$defs/aspect"}}
+  },
+  "$defs": {
+    "aspect": {
+      "type": "object",
+      "required": ["aspect", "start", "end", "text"],
+      "properties": {
+        "aspect": {"enum": ["acting", "story", "screenplay", "direction", "characters", "cinematography", "visual_effects", "editing", "pacing", "music", "sound_design", "dialogue", "worldbuilding", "emotional_impact", "originality", "runtime"]},
+        "start": {"type": "integer", "minimum": 0},
+        "end": {"type": "integer", "minimum": 1},
+        "text": {"type": "string", "minLength": 1},
+        "token_confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "confidence_calibrated": {"type": "boolean"},
+        "label": {"enum": ["negative", "neutral", "positive"]},
+        "probabilities": {
+          "type": "object",
+          "required": ["negative", "neutral", "positive"],
+          "additionalProperties": false,
+          "properties": {
+            "negative": {"type": "number", "minimum": 0, "maximum": 1},
+            "neutral": {"type": "number", "minimum": 0, "maximum": 1},
+            "positive": {"type": "number", "minimum": 0, "maximum": 1}
+          }
+        },
+        "calibrated": {"type": "boolean"}
+      },
+      "dependentRequired": {"label": ["probabilities"], "probabilities": ["label"]}
+    }
+  },
+  "$comment": "Shape for one reviewed text's actual trained-model result, not fabricated example values or an API availability envelope. Python must validate end>start, exact original Unicode substring, taxonomy/version/model provenance, nonoverlap policy and probability sum. Token confidence is not an exact-span correctness probability unless separately validated. No audience score or overall-sentiment propagation is implied."
+}

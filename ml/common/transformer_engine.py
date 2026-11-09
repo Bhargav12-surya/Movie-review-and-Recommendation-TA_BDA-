@@ -17,13 +17,18 @@ from .calibration import fit_temperature, softmax
 from .checkpointing import load_checkpoint, save_checkpoint, seed_everything
 from .data import load_experiment
 from .gates import require_training_approval, reserve_final_test, training_preflight
-from .hardware import guard_resources, verify_device
+from .hardware import guard_resources, resources, verify_device
 from .metrics import classification_metrics
 from .model_source import dependency_blockers, verify_local_model
 
 
 def preflight(config: dict, component: str) -> dict:
     report = training_preflight(config, component=component)
+    try:
+        _settings(config)
+        _view_settings(config)
+    except (OSError, ValueError, TypeError, KeyError):
+        report["blockers"].append("Training/text-view configuration is invalid or unavailable.")
     _, blockers = verify_local_model(config)
     report["blockers"].extend(blockers + dependency_blockers())
     try:
@@ -69,10 +74,14 @@ def _settings(config: dict) -> dict:
     for key, (minimum, maximum) in bounds.items():
         if type(value[key]) is not int or not minimum <= value[key] <= maximum:
             raise ValueError("Training setting outside the bounded range: " + key)
-    if value["num_workers"] != 0:
+    if type(value["seed"]) is not int or not 0 <= value["seed"] <= 2**32 - 1:
+        raise ValueError("An explicit bounded random seed is required.")
+    if type(value["gradient_checkpointing"]) is not bool:
+        raise ValueError("Gradient checkpointing must be a boolean.")
+    if type(value["num_workers"]) is not int or value["num_workers"] != 0:
         raise ValueError("This reproducible Windows implementation starts with zero loader workers.")
     for key in ("learning_rate", "weight_decay", "warmup_ratio", "gradient_clip"):
-        if not isinstance(value[key], (float, int)) or not math.isfinite(value[key]) or value[key] < 0:
+        if isinstance(value[key], bool) or not isinstance(value[key], (float, int)) or not math.isfinite(value[key]) or value[key] < 0:
             raise ValueError("Invalid finite training setting: " + key)
     if value["learning_rate"] <= 0 or value["warmup_ratio"] > 1:
         raise ValueError("Learning rate/warmup settings are invalid.")
@@ -85,7 +94,8 @@ def _view_settings(config: dict) -> dict:
     mapping_path = settings.get("slang_mapping_path")
     mapping = read_json(safe_path(mapping_path, config["_workspace"])) if mapping_path else {}
     if policy not in {"preserve", "remove_for_ablation"} or any(
-        not isinstance(value, str) for value in mapping.values()):
+        not isinstance(key, str) or not key or key != key.casefold() or
+        not isinstance(value, str) or not value.strip() for key, value in mapping.items()):
         raise ValueError("Invalid reviewed text-view configuration.")
     return {"emoji_policy": policy, "slang_mapping": mapping}
 
@@ -155,7 +165,7 @@ def train(config: dict, component: str, resume_checkpoint: str | None = None) ->
     require_training_approval(config, bundle, component)
     settings = _settings(config)
     view_settings = _view_settings(config)
-    guard_resources(config)
+    resource_before = guard_resources(config)
     source, blockers = verify_local_model(config)
     if blockers:
         raise ValueError("Local pretrained model verification failed.")
@@ -218,6 +228,7 @@ def train(config: dict, component: str, resume_checkpoint: str | None = None) ->
     if progress["next_batch"] % settings["gradient_accumulation_steps"] and progress["next_batch"] != batches:
         raise ValueError("Checkpoint does not fall on an optimizer boundary.")
     started = time.monotonic()
+    trained_examples = 0
     optimizer.zero_grad(set_to_none=True)
     try:
         for epoch in range(progress["epoch"], settings["epochs"]):
@@ -239,6 +250,7 @@ def train(config: dict, component: str, resume_checkpoint: str | None = None) ->
                 if not torch.isfinite(loss).item():
                     raise RuntimeError("Nonfinite training loss; preserve run and diagnose.")
                 scaler.scale(loss).backward()
+                trained_examples += int(batch["labels"].shape[0])
                 if (index + 1) % settings["gradient_accumulation_steps"] == 0 or index + 1 == batches:
                     scaler.unscale_(optimizer)
                     torch.nn.utils.clip_grad_norm_(model.parameters(), settings["gradient_clip"])
@@ -308,6 +320,9 @@ def train(config: dict, component: str, resume_checkpoint: str | None = None) ->
         "manifest_hashes": bundle.manifest_hashes, "tuning_history": progress["history"],
         "calibration_metrics": calibration, "temperature": temperature, "hardware": hardware,
         "elapsed_seconds": round(time.monotonic() - started, 3), "updates": progress["updates"],
+        "resources_before": resource_before, "resources_after": resources(config["_workspace"]),
+        "processed_training_examples_this_session": trained_examples,
+        "session_examples_per_second_including_validation_calibration": trained_examples / max(time.monotonic() - started, 1e-9),
         "peak_vram_allocated_bytes": torch.cuda.max_memory_allocated() if device.type == "cuda" else None,
         "test_evaluated": False, "model_manifest_sha256": sha256(run / "model_manifest.json")}
     packages = {}
@@ -332,12 +347,18 @@ def train(config: dict, component: str, resume_checkpoint: str | None = None) ->
 def load_trained(config: dict, run_directory: str, device_name: str = "cpu"):
     import torch
     from transformers import AutoModelForSequenceClassification, AutoTokenizer
-    run = safe_path(run_directory, config["_workspace"])
+    run = safe_path(run_directory, config["_workspace"], output=True)
     manifest = read_json(run / "model_manifest.json")
     if manifest.get("trained") is not True or manifest.get("task") != config["task"] or manifest.get("labels") != config["labels"]:
         raise ValueError("Trained model/task/label contract mismatch.")
     if sha256(run / "input_contract.json") != manifest.get("input_contract_sha256"):
         raise ValueError("Frozen preprocessing/source contract hash does not match the trained artifact.")
+    contract = read_json(run / "input_contract.json")
+    if contract.get("text_view") != manifest.get("text_view") or contract.get("manifest_hashes") != manifest.get("manifest_hashes"):
+        raise ValueError("Trained preprocessing/data differs from the frozen input contract.")
+    actual_files = {str(path.relative_to(run)) for path in (run / "model").iterdir() if path.is_file()}
+    if not actual_files or actual_files != set(manifest.get("files_sha256", {})):
+        raise ValueError("Every trained model/tokenizer file requires an exact recorded hash.")
     for name, checksum in manifest["files_sha256"].items():
         path = (run / name).resolve()
         if not path.is_relative_to(run) or sha256(path) != checksum:
@@ -350,6 +371,8 @@ def load_trained(config: dict, run_directory: str, device_name: str = "cpu"):
         raise RuntimeError("Explicit CUDA inference is unavailable; choose cpu or auto.")
     model = AutoModelForSequenceClassification.from_pretrained(str(run / "model"), local_files_only=True,
         trust_remote_code=False, use_safetensors=True).to(device)
+    if model.config.label2id != manifest["labels"]:
+        raise ValueError("Saved model class ordering differs from its manifest.")
     tokenizer = AutoTokenizer.from_pretrained(str(run / "model"), local_files_only=True, trust_remote_code=False)
     return run, manifest, model, tokenizer, device
 
@@ -362,22 +385,32 @@ def evaluate(config: dict, run_directory: str, split: str = "tuning", final_test
     run, manifest, model, tokenizer, device = load_trained(config, run_directory, device_name)
     if bundle.manifest_hashes != manifest["manifest_hashes"]:
         raise ValueError("Evaluation data differs from the frozen model experiment.")
+    if split == "test":
+        selection = read_json(run / "selection.json")
+        if selection.get("model_frozen") is not True or selection.get("selected_for_final_test") is not True or (
+            selection.get("model_manifest_sha256") != sha256(run / "model_manifest.json") or
+            selection.get("manifest_hashes") != bundle.manifest_hashes or not selection.get("reviewed_by")):
+            raise ValueError("Final test needs a human-reviewed frozen model selection record.")
     reserve_final_test(run, bundle, split, final_test)
     dataset = _dataset(bundle.records[split], bundle.label_names, run / "evaluation_cache" / split, manifest["text_view"])
+    started = time.monotonic()
     logits, targets = _logits(model, dataset, tokenizer, manifest["maximum_sequence_length"], 4, device, None)
     probabilities = softmax(logits, manifest["temperature"])
     metrics = classification_metrics(targets, probabilities, bundle.label_names)
     cohorts = {}
     for index, row in enumerate(bundle.records[split]):
         tags = list(row.metadata.get("cohorts") or [])
-        if row.metadata.get("language_code"):
-            tags.append("language:" + row.metadata["language_code"])
+        for key in ("language_code", "script"):
+            if row.metadata.get(key):
+                tags.append(("language" if key == "language_code" else "script") + ":" + row.metadata[key])
         for tag in set(tags):
             cohorts.setdefault(tag, []).append(index)
     cohort_metrics = {tag: classification_metrics([targets[i] for i in indices],
         [probabilities[i] for i in indices], bundle.label_names) for tag, indices in cohorts.items()}
     result = {"task": config["task"], "split": split, "metrics": metrics, "cohorts": cohort_metrics,
         "manifest_hashes": bundle.manifest_hashes, "model_manifest_sha256": sha256(run / "model_manifest.json"),
+        "evaluation_seconds_including_cohort_metrics": time.monotonic() - started,
+        "calibration_scope": "fit_split_diagnostic" if split == "calibration" else "held_out_from_calibration",
         "cohort_policy": "Human/source metadata only; absence does not imply a tested language capability."}
     write_json(run / ("evaluation-" + split + "-%d.json" % time.time_ns()), result)
     return result
