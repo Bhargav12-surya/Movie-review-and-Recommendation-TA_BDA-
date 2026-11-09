@@ -1,5 +1,11 @@
 # Environment Audit — Movie Review & Recommendation System
 
+Latest follow-up,9 November2026 (Asia/Calcutta): the original Phase0 findings
+below are historical. The user subsequently prepared the root3.11 environment.
+Scientific package imports and actual PyTorch CUDA/precision checks now pass;
+Spark/SBT and later framework prerequisites remain missing. See the dated
+follow-up at the end and IMPLEMENTATION_STATUS.md for current evidence.
+
 Audit date: **8 November 2026, Asia/Calcutta**. Workspace: `D:\BDA_TA`. Scope: Phase 0 inspection and planning only. Status: **audit complete; implementation and installation await user approval**.
 
 ## 1. Findings that affect the execution plan
@@ -260,3 +266,59 @@ SHA-256 records identify the small configuration files actually inspected; they 
 - [ ] New environment passes CUDA, Scala/Spark, database, and later localhost smoke tests.
 
 **Stop here. This audit authorizes no implementation or installations by itself.** Continue only after the user approves the next phase described in `IMPLEMENTATION_PLAN.md`.
+
+## 13. Executed follow-up after manual setup — 9 November 2026
+
+The Phase0 stop above is historical. The user subsequently authorized source
+implementation and dependency-based Phase2 progress; manual acquisition and
+training restrictions remain. New packages appeared outside this agent's
+installation workflow. No installation, upgrade or global configuration edit
+was performed by this audit or the Phase2 implementation.
+
+The actual selected interpreter remains D:\BDA_TA\.venv\Scripts\python.exe,
+Python3.11.9. The diagnostic process now sees JAVA_HOME matching the existing
+Adoptium21.0.12.1 JDK. Current metadata/import evidence:
+
+| Package | Actual version | Executed verification |
+|---|---|---|
+| NumPy | 2.4.6 | Import passed |
+| pandas | 2.3.3 | Import passed |
+| scikit-learn | 1.9.1 | Import passed; no model fit |
+| PyArrow | 26.0.1 | Import passed; no Scala Parquet proof |
+| PyYAML | 6.0.3 | Import passed |
+| pytest | 9.2.0 | Import passed; project suite ran through unittest |
+| torch | 2.14.1+cu130 | Actual CUDA tensor operation passed |
+| httpx | 0.28.1 | Metadata observed |
+| matplotlib | 3.11.2 | Metadata observed |
+| seaborn | 0.13.2 | Metadata observed |
+| python-dotenv | 1.2.4 | Metadata observed |
+
+pip check reported no broken requirements. This checks installed declared
+constraints; it is not a solved future NLP/backend environment or a benchmark.
+Transformers,Datasets,Accelerate,Sentence Transformers,JupyterLab and backend
+packages were still absent in this selected environment at the recheck.
+
+The actual torch build reports CUDA runtime13.0,RTX5050,compute capability12.0
+and sm_120 in its architecture list. A tiny float32 CUDA multiplication completed
+with finite results. Float16 and BF16 multiplications also completed with finite
+results. Peak tensor allocation was33,558,528bytes and reserved memory35,651,584bytes
+for this check. No model,backward pass,training,throughput benchmark or resume
+test ran. AMP in a chosen Transformer training loop still requires its own test.
+NVIDIA driver621.01 and8,151MiB VRAM were detected without modifying them.
+
+Both CUDA13.0 and13.2 Windows builds are published for PyTorch2.14.1 in the
+[official installation guide](https://pytorch.org/get-started/previous-versions/).
+The installed cu130 build is working for this bounded test. The user-edited NLP
+manifest still requests cu132 and earlier analysis constraints differ from the
+new installed versions. Preserve both the installation and user's edits;
+reconcile the later manual dependency plan rather than silently upgrading or
+downgrading. No CUDA Toolkit or driver replacement is justified by this result.
+
+The recheck measured49.269GiB free on D: and1,916.16MiB available RAM. These
+snapshots do not certify headroom for Spark/training. Spark/SBT,Node/npm and
+PostgreSQL tools remain unavailable in the checked locations. Phase2 still
+requires real Spark compilation,ScalaTest and Windows Parquet/streaming runs.
+
+Evidence: [full manual-install recheck](artifacts/environment/manual-install-recheck-20261109-1c28488e.json),
+[Phase2 toolchain audit](documentation/bda/LOCAL_TOOLCHAIN_AUDIT.md),
+[current implementation status](IMPLEMENTATION_STATUS.md).

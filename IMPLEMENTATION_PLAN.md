@@ -2,7 +2,7 @@
 
 Audit date: 8 November 2026, Asia/Calcutta. Workspace: D:\BDA_TA.
 
-Status: inspection complete; implementation, installation, dataset acquisition and training are not authorized by this audit. This document is a proposed execution plan, not a claim that the system is built. Stop after presenting the four audit documents and await approval.
+Original audit status: inspection was complete on 8 November 2026 and stopped for approval. Subsequent user instructions authorized implementation. On 9 November 2026 (Asia/Calcutta), the user explicitly approved dependency-based Phase 2 progress against validated local MovieLens inputs while Phase 1 provenance, canonical mappings and NLP annotations remain open. This is the accepted gate exception; the other phase dependencies remain. Software/dataset/model acquisition stays manual, build dependency resolution needs authorization, and substantial training is not approved. See IMPLEMENTATION_STATUS.md for actual evidence rather than treating this plan as completion.
 
 ## 1. Specification, scope, and complete system understanding
 
@@ -33,6 +33,8 @@ The final demonstration uses frontend localhost:3000, backend localhost:8000, AP
 | Streaming needs trained prediction outputs | Phase 2 validates event/replay contracts with isolated labelled test fixtures; actual trained-prediction aggregation is connected in Phase 7 and rehearsed in Phase 12 |
 
 Completing an output dependency later is part of integration, not permission to skip an earlier incomplete phase. Missing data blocks the relevant exit criterion; it does not authorize substituting a fabricated dataset.
+
+Accepted exception: Phase 2 source implementation and available offline checks may proceed using audited MovieLens before the unrelated NLP data criteria close. Full Spark execution still requires the manually prepared toolchain and resource headroom. Phase 1 remains partial. After Phase 2 execution/evidence acceptance, integrate the mandatory multilingual/informal-language extension and annotation addendum before Phase 3. No later phase is automatically complete or authorized to bypass its own data/approval requirements.
 
 ## 2. What already exists, and what was inspected
 
@@ -184,6 +186,8 @@ Schema migrations must add actual foreign keys/unique/check constraints to the a
 
 Run Phase 0 completion first, then phases1→2→3→4→5→6→7→8→9→10→11→12→13. Each phase has objectives, files, dependencies, implementation order, tests, metrics, expected outputs and a completion checklist below. A checkbox records evidence, not confidence or elapsed effort. No model performance target is fabricated before baselines exist.
 
+Current execution order after the accepted exception: preserve completed foundation/data validation; implement and offline-check Phase 2 source against MovieLens; user manually prepares Spark/SBT/dependencies; verify the environment; compile/test and execute smoke, batch and streaming jobs; review Phase 2 evidence; integrate the requested NLP extension; close the relevant provenance/label/mapping prerequisites before NLP training. Independent source work does not substitute for any unexecuted check.
+
 ### Phase 0 — workspace, hardware and environment audit/foundation
 
 Objective: establish the actual machine, preserve existing work, reconcile specifications and prepare a compatible isolated development environment only after approval.
@@ -257,7 +261,7 @@ Files: scala/build.sbt, project/build.properties; separate config/ingestion/{Mov
 
 Implementation order:
 
-1. Pin one Spark/Scala/JDK tuple, compile a tiny local application and verify real filesystem/Parquet operation on Windows.
+1. Pin one Spark/Scala/JDK tuple. Source work and cached-compiler config/syntax checks may proceed under the approved exception. After manual toolchain preparation, compile a tiny local application and verify real filesystem/Parquet operation on Windows before the full run.
 2. Read source CSV using explicit schemas, capture malformed rows and ingestion provenance; keep raw files untouched.
 3. Produce Bronze/Silver Parquet with source timestamps, normalized IDs/genres, UTC conversions and documented duplicate-event policy.
 4. Join ratings, movies, tags, links and approved metadata; track row counts/orphans before and after joins.
@@ -655,9 +659,9 @@ Concrete first sequence:
 3. Select and record explicit Python 3.11/JDK 21/Scala 2.13/Spark versions, resolve the official Windows Blackwell torch wheel ambiguity, and prepare a concrete installation batch for approval where required. No blanket upgrade.
 4. After authorized installations, run tiny CUDA/precision/JVM/Node checks; save actual results. No model training.
 5. Create local-only dataset validators and preprocessing/mapping scripts with tiny isolated tests and clear missing-input failures.
-6. Use the now-present MovieLens files for the first real validator run; wait for the remaining manually supplied review/metadata/annotation inputs. Complete Phase 1 schema/provenance/mapping/split acceptance before Phase 2 processing.
+6. The real MovieLens/IMDb audits and independent manifest checks have run. Under the explicit 9 November gate exception, continue Phase 2 MovieLens source work while human review/metadata/annotation inputs remain pending. Keep provisional movie IDs and do not claim full Phase 1 acceptance. Runtime Phase 2 processing still requires manual Spark/SBT preparation and measured headroom.
 
-If data remains missing, continue the authorized foundation/validator tests and report that Phase 1 is blocked. Do not download replacements, train on the bundled synthetic demo, restore deleted sources or jump ahead to claim an integrated application.
+If NLP data remains missing, continue the authorized MovieLens Phase 2 work and report Phase 1 as partial. Do not download replacements, train on the bundled synthetic demo, restore deleted sources or claim an integrated application. Phase 3 training still needs its genuine labels, provenance, approved artifacts and functioning environment.
 
 ## 10. Audit hand-off checklist
 
@@ -669,6 +673,6 @@ If data remains missing, continue the authorized foundation/validator tests and 
 - [x] Required missing data folders created; raw inputs preserved.
 - [x] IMPLEMENTATION_PLAN.md, ENVIRONMENT_AUDIT.md, DATASET_AUDIT.md, AGENTS.md created.
 - [x] No packages/datasets/models installed or downloaded; no model trained; no original project file overwritten.
-- [ ] User approval received for the next execution step.
+- [x] User approval received for implementation and the narrow dependency-based Phase 2 exception; installation and training are separate.
 
-Current stopping point: present the four documents and audit findings, then wait for approval.
+Current next step: follow documentation/bda/RUNBOOK.md. Complete the manual Spark/SBT prerequisite step and actual Phase 2 checks before recording completion or starting the queued NLP extension. The original audit stop was already cleared by the user.

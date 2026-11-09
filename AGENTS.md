@@ -6,6 +6,8 @@ Read the entire root `ARCHITECTURE.md` before project work. It is the primary te
 
 The initial authorized work is inspection, creation of the four requested Markdown documents, and creation of missing dataset folders. After presenting the audit, stop for the user's approval. Until that approval, do not install packages, download datasets or models, train models, start the application, migrate a database, reorganize source files, or repair Git state. Once the user authorizes the next work, continue within that scope without repeatedly requesting the same approval. Large training runs and material architectural changes still require the user's explicit authorization.
 
+Accepted progress authorization, 9 November 2026 (Asia/Calcutta): the user approved ordinary implementation and then explicitly selected **Allow dependency-based progress**. Phase 2 Scala/Spark source work and available offline checks may proceed against validated local MovieLens data while Phase 1 provenance, canonical mappings and NLP annotations remain open. Do not describe Phase 1 as complete or use this exception to invent mappings or bypass model data requirements. Manual installation/download/build-resolution and training-approval restrictions still apply. Phase 2 requires actual Spark compilation/runtime evidence before completion. Integrate the mandatory language/slang/sarcasm/Hinglish extension after that Phase 2 gate, as recorded in documentation/architecture/NLP_EXTENSION_AFTER_PHASE_2.md.
+
 ## Preserve the workspace
 
 - Work in `D:\BDA_TA`; use Windows PowerShell commands and literal paths.

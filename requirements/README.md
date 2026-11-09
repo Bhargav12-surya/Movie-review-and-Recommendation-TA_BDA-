@@ -26,3 +26,10 @@ in their respective phases; do not bulk-install unrelated groups.
 
 Consult PREREQUISITES.md for official sources, exact selected candidates,
 installation order, environment configuration and verification commands.
+
+Late9 November recheck: scientific packages and torch2.14.1+cu130 appeared through
+manual setup. Imports,pip check and tiny CUDA/FP16/BF16 checks passed. Older
+analysis/root pytest candidates differ from the actual versions, and the NLP
+manifest still targets cu132. Those manifests were preserved. Reconcile future
+manual resolution with the working environment; do not force incidental
+downgrades or replace the verified GPU runtime merely to apply an earlier list.

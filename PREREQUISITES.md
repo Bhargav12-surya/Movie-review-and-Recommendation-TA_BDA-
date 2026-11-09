@@ -15,22 +15,34 @@ evidence belongs in IMPLEMENTATION_STATUS.md and generated reports.
 
 ## 1. Current environment and immediate readiness
 
-The root .venv now exists and is an isolated **Python 3.11.9** environment. It has
-**pip 24.0 only** among the inspected project dependencies. This supersedes the
-earlier audit observation that the root environment was absent.
+The root .venv is an isolated **Python 3.11.9** environment. A late manual-install
+recheck on9 November2026 found NumPy2.4.6,pandas2.3.3,scikit-learn1.9.1,
+PyArrow26.0.1,PyYAML6.0.3,pytest9.2.0 and **torch2.14.1+cu130**. Six scientific/
+test imports and pip check passed. Actual RTX5050 CUDA,FP16 and BF16 tiny tensor
+operations passed. No model/backward/training check has run. This supersedes
+the earlier pip-only snapshot; no installation was performed by this work.
+See [the actual report](artifacts/environment/manual-install-recheck-20261109-1c28488e.json).
+
+Some earlier analysis/test candidate pins below differ from these new installs.
+The current NLP manifest also targets cu132 while the detected build is cu130.
+Both CUDA options are published for Windows PyTorch2.14.1 in the
+[official version guide](https://pytorch.org/get-started/previous-versions/).
+Do not replace working packages or force downgrades just to apply an older
+candidate list. Reconcile the future manual install with the observed working
+environment first. The complete future dependency set is not a tested lock.
 
 | Component | Observed state | Action |
 |---|---|---|
 | Python | 3.11.9 x64 at C:\Users\bharg\AppData\Local\Programs\Python\Python311\python.exe | Keep; use the root .venv explicitly |
-| Root project .venv | Python 3.11.9; no scientific, pytest, NLP or backend packages detected | Keep; standard-library validators can run now |
+| Root project .venv | Python3.11.9; scientific/test packages now installed; Transformers/Datasets/backend still missing | Keep; six scientific/test imports verified |
 | Python launcher | Bare py selects 3.14.6 | Do not use it to select this project's interpreter |
 | Preserved temp/.venv | Python 3.12.10 | Preserve; do not reuse, clear or upgrade it |
 | Java on PATH | Adoptium Temurin 21.0.12.1+1-LTS | Keep this installed JDK |
-| JAVA_HOME | Points to a different Coursier-cached JDK 21 patch | Select the project JDK in configuration/child processes |
+| JAVA_HOME | Latest diagnostic process matches the selected Adoptium JDK21 | Keep; earlier Coursier mismatch was a historical snapshot |
 | NVIDIA | RTX 5050 Laptop,8151 MiB,capability 12.0; driver 621.01 | Keep driver; no automatic driver/CUDA change |
 | Git / VS Code | Previously observed 2.56.0.windows.4 / 1.143.1 | Keep; no duplicate installation |
 | SBT / Spark | Not found in checked PATH/install locations | Manual Phase 2 prerequisite |
-| PyTorch CUDA | Absent from root .venv | Manual Phase 3 prerequisite; operation unverified |
+| PyTorch CUDA | 2.14.1+cu130; sm_120 and tiny CUDA/FP16/BF16 checks pass | Reuse validated build; reconcile the cu132 candidate before any manual replacement |
 | PostgreSQL / pgvector | Server/extension not verified | Manual Phase 9 prerequisite |
 | Node / npm | Not found in checked locations | Deferred to Phase 10 |
 | Docker / WSL | Not prepared in the audit | Optional alternative deployment, not a prerequisite |
@@ -120,7 +132,9 @@ The current inventory/CSV/JSON/mapping validation and unittest suites use Python
 standard library. requirements/phase1.txt records this. Run the root interpreter
 directly. requirements-dev.txt offers pytest 8.4.2 as an optional runner.
 
-For later EDA/classical baselines, requirements/analysis.txt contains:
+Earlier EDA/classical-baseline candidates in requirements/analysis.txt follow.
+They differ from the current manual installs in section1; preserve the working
+environment and reconcile constraints before using these older pins.
 
 | Package | Pin | Official release |
 |---|---|---|
@@ -136,7 +150,8 @@ For later EDA/classical baselines, requirements/analysis.txt contains:
 | httpx | 0.28.1, later HTTP tests | [PyPI](https://pypi.org/project/httpx/0.28.1/) |
 | JupyterLab | 4.6.4, notebooks on demand | [PyPI](https://pypi.org/project/jupyterlab/4.6.4/) |
 
-The optional manual commands, when the user chooses this group, are:
+These earlier candidate commands are retained for a separately reviewed fresh
+environment. They are not the next step for this already prepared environment:
 
 ~~~powershell
 .\.venv\Scripts\python.exe -m pip install -r .\requirements\analysis.txt
@@ -178,6 +193,8 @@ The precise manual torch command for the selected candidate is:
 ~~~
 
 The installed version should identify the CUDA build, such as 2.14.1+cu132.
+The existing2.14.1+cu130 build now passes local tensor/precision checks. The
+command above is a fresh-install candidate, not a request to replace that build.
 No torchvision or torchaudio is needed. No model checkpoint is downloaded by
 this guide or by an environment verification command.
 
@@ -257,8 +274,8 @@ installation or scaffolding command is part of the current foundation.
    metadata and launcher location. Once the user approves those downloads,
    resolve the pinned Phase 2 build and run a tiny Scala/Parquet test. Save
    execution evidence and decide whether Windows native Hadoop support is needed.
-6. **Install the approved CUDA torch wheel before Phase 3.** Use only the explicit
-   root Python 3.11 environment and official cu132 index. Run the tiny CUDA test
+6. **Verify the existing CUDA torch wheel before Phase 3.** Root Python3.11 now
+   has2.14.1+cu130; the cu132 candidate remains a separate manual choice. Run the tiny CUDA test
    before any permitted checkpoint download or training. Keep the working
    NVIDIA driver unless actual evidence requires an approved change.
 7. **Add NLP groups by task.** Review licenses and local artifact locations
@@ -498,7 +515,7 @@ not trigger downloads. Core inference requires no paid API.
 - [ ] Verify pip check plus required native imports/functional operations.
 - [ ] Manually prepare SBT 1.10.7/Spark 4.3.0 and approve dependency resolution.
 - [ ] Prove Scala 2.13.18/Parquet operation and decide native Windows needs.
-- [ ] Manually install torch2.14.1+cu132 and pass real CUDA/precision checks.
+- [x] Root torch2.14.1+cu130 detected; actual CUDA/FP16/BF16 tensor checks pass. Model/backward/resume checks remain separate.
 - [ ] Review approved model licenses/cache budget before any weight download.
 - [ ] Manually prepare PostgreSQL 18.6 and matching pgvector0.8.7 for Phase 9.
 - [ ] Prepare Node 24.22.2/npm and the actual frontend lockfile in Phase 10.
