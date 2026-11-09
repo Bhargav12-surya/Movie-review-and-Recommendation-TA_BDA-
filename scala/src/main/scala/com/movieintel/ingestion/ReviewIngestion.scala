@@ -44,8 +44,8 @@ object ReviewIngestion {
         lit("synthetic_or_unlabelled_source"))
       .when(invalidOptionalProbability, lit("invalid_optional_probability"))
       // Withdrawals still delete a formerly eligible record. Upserts need all eligibility.
-      .when(col("operation") === "upsert" &&
-        (col("consent_eligible").isNull || col("moderation_eligible").isNull), lit("missing_eligibility_flags"))
+      .when(col("consent_eligible").isNull || col("moderation_eligible").isNull,
+        lit("missing_eligibility_flags"))
       .when(col("operation") === "upsert" && col("consent_eligible") && col("moderation_eligible") &&
         !coalesce(validProbabilities, lit(false)),
         lit("invalid_sentiment_probabilities"))

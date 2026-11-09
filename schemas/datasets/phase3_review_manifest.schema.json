@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Phase 3 adjudicated movie-domain manifest record",
+  "type": "object",
+  "required": [
+    "split",
+    "group_id",
+    "review_id",
+    "review_revision",
+    "movie_id",
+    "review_text",
+    "text_sha256",
+    "annotation_status",
+    "adjudicator_id",
+    "training_permitted",
+    "consent_or_license_ref",
+    "language_code"
+  ],
+  "properties": {
+    "split": {
+      "enum": [
+        "train",
+        "tuning",
+        "calibration",
+        "test"
+      ]
+    },
+    "group_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "review_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "review_revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "movie_id": {
+      "type": [
+        "string",
+        "integer"
+      ]
+    },
+    "review_text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "text_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "annotation_status": {
+      "const": "adjudicated"
+    },
+    "adjudicator_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "training_permitted": {
+      "const": true
+    },
+    "consent_or_license_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "is_synthetic": {
+      "const": false
+    },
+    "is_deleted": {
+      "const": false
+    },
+    "consent_withdrawn": {
+      "const": false
+    },
+    "language_code": {
+      "enum": [
+        "en",
+        "hi",
+        "hi-Latn",
+        "mul",
+        "unknown"
+      ]
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "script": {
+      "enum": [
+        "Latin",
+        "Devanagari",
+        "Mixed",
+        "Other",
+        "unknown"
+      ]
+    },
+    "cohorts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "reviewer_group_id": {
+      "type": "string"
+    }
+  },
+  "oneOf": [
+    {
+      "required": [
+        "sentiment",
+        "label_schema_version"
+      ],
+      "properties": {
+        "sentiment": {
+          "enum": [
+            "negative",
+            "neutral",
+            "positive",
+            0,
+            1,
+            2
+          ]
+        },
+        "label_schema_version": {
+          "const": "sentiment-three-class-v1"
+        }
+      }
+    },
+    {
+      "required": [
+        "sarcasm",
+        "label_schema_version"
+      ],
+      "properties": {
+        "sarcasm": {
+          "enum": [
+            "not_sarcastic",
+            "sarcastic",
+            0,
+            1
+          ]
+        },
+        "label_schema_version": {
+          "const": "sarcasm-binary-v1"
+        }
+      }
+    }
+  ],
+  "$comment": "Python additionally checks permission,approved canonical registry,original SHA256,Phase1 sentiment/aspect annotations,all class supports and disjoint group/text/movie/reviewer identities. This schema does not certify that a source is genuine or approved."
+}

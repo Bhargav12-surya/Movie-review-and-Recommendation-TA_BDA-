@@ -48,6 +48,8 @@ object MovieLensIngestion {
       .option("header", "true")
       .option("enforceSchema", "true")
       .option("encoding", "UTF-8")
+      .option("quote", "\"")
+      .option("escape", "\"")
       .option("mode", "PERMISSIVE")
       .option("columnNameOfCorruptRecord", "_corrupt_record")
       .option("multiLine", multiline.toString)

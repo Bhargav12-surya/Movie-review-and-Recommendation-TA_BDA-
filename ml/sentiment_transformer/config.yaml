@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "task": "three_class_movie",
+  "workspace": null,
+  "output_dir": "models/sentiment_transformer/run-001",
+  "approval_path": null,
+  "language_scope": [
+    "en"
+  ],
+  "data": {
+    "format": "annotated_reviews",
+    "source_root": "data/processed/annotations",
+    "canonical_registry_path": null,
+    "provenance_path": null,
+    "manifests": {
+      "train": null,
+      "tuning": null,
+      "calibration": null,
+      "test": null
+    },
+    "group_by_movie": true,
+    "maximum_records_per_split": 100000,
+    "maximum_inline_bytes": 134217728
+  },
+  "model": {
+    "local_path": null,
+    "permission_path": null
+  },
+  "baseline_reports": [],
+  "preprocessing": {
+    "emoji_policy": "preserve",
+    "slang_mapping_path": null
+  },
+  "training": {
+    "device": "cuda",
+    "precision": "auto",
+    "epochs": 2,
+    "micro_batch_size": 4,
+    "gradient_accumulation_steps": 8,
+    "maximum_sequence_length": 128,
+    "maximum_updates": 2000,
+    "learning_rate": 0.00002,
+    "weight_decay": 0.01,
+    "warmup_ratio": 0.1,
+    "gradient_clip": 1,
+    "gradient_checkpointing": false,
+    "checkpoint_every_updates": 200,
+    "maximum_checkpoint_count": 8,
+    "patience": 2,
+    "seed": 42,
+    "num_workers": 0
+  },
+  "resources": {
+    "minimum_disk_free_gib": 20,
+    "minimum_available_memory_mib": 3072
+  }
+}

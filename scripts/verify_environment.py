@@ -17,6 +17,12 @@ _spec = util.spec_from_file_location(
 common = util.module_from_spec(_spec)
 _spec.loader.exec_module(common)
 
+_toolchain_spec = util.spec_from_file_location(
+    "_toolchain_discovery", Path(__file__).with_name("_toolchain_discovery.py")
+)
+toolchain = util.module_from_spec(_toolchain_spec)
+_toolchain_spec.loader.exec_module(toolchain)
+
 PACKAGE_PHASES = {
     "numpy": 1, "pandas": 1, "scikit-learn": 1, "pyarrow": 1,
     "PyYAML": 1, "pytest": 1, "httpx": 1, "matplotlib": 1,
@@ -115,6 +121,39 @@ def check_program(report: dict, check_id: str, name: str, arguments: list[str],
     return result
 
 
+def inspect_jvm_toolchain(workspace: Path, config: dict, report: dict, required: bool) -> None:
+    """Read only installation files; SBT and Spark launchers are never executed."""
+    spark_home = toolchain.selected_home(workspace, environment=os.environ.get("SPARK_HOME"),
+                                        configured=config["spark"].get("home"))
+    sbt_home = toolchain.selected_home(workspace, environment=os.environ.get("SBT_HOME"),
+                                      configured=config["sbt"].get("home"))
+    # PATH discovery is a last metadata fallback when no home was selected.
+    if spark_home is None:
+        submit = common.executable("spark-submit")
+        if submit and Path(submit).parent.name.lower() == "bin":
+            spark_home = Path(submit).resolve().parent.parent
+    if sbt_home is None:
+        launcher = common.executable("sbt")
+        if launcher and Path(launcher).parent.name.lower() == "bin":
+            sbt_home = Path(launcher).resolve().parent.parent
+    spark = toolchain.spark_metadata(spark_home, config["spark"])
+    sbt = toolchain.sbt_metadata(sbt_home, str(config["sbt"]["version"]))
+    common.add_check(report, "tool.sbt", sbt["status"],
+                     "SBT launcher files/default version inspected only; bootstrap/build resolution was not invoked.",
+                     phase=2, required=required, path=sbt["launcher"], evidence=sbt)
+    common.add_check(report, "tool.spark-submit", spark["status"],
+                     "Spark RELEASE, launch file and pinned jar filenames inspected; no Spark JVM or job was started.",
+                     phase=2, required=required, path=spark["submit"], evidence=spark)
+    shell_present = bool(spark["shell"] and Path(spark["shell"]).is_file())
+    common.add_check(report, "tool.spark-shell", "pass" if shell_present else "missing",
+                     "Interactive shell file presence only; no shell was started.",
+                     phase=2, required=False, path=spark["shell"], runtime_executed=False)
+    report["notes"].append(
+        "JVM tool checks are installation metadata only. SBT bootstrap, Scala compilation, "
+        "Spark runtime, ScalaTest and Parquet/streaming acceptance require separate execution evidence."
+    )
+
+
 def inspect(workspace: Path, config: dict, args: argparse.Namespace, report: dict) -> None:
     profile = args.profile
     required = lambda scope: profile in (scope, "All")
@@ -197,30 +236,15 @@ def inspect(workspace: Path, config: dict, args: argparse.Namespace, report: dic
                      "directly. Future Spark launchers must select it in the child process.",
                      observed=global_home, selected=str(java_home))
 
-    for name, phase in (("sbt", 2), ("spark-submit", 2), ("spark-shell", 2),
-                        ("node", 10), ("npm", 10), ("psql", 9), ("pg_config", 9)):
+    inspect_jvm_toolchain(workspace, config, report, required("Spark"))
+
+    for name, phase in (("node", 10), ("npm", 10), ("psql", 9), ("pg_config", 9)):
         location = common.executable(name)
         scope = "Spark" if phase == 2 else "Frontend" if phase == 10 else "Backend"
-        if name == "sbt" and location:
-            common.add_check(report, f"tool.{name}", "unverified",
-                             "Launcher found. It was not executed because SBT may resolve "
-                             "and download dependencies; manual setup approval is required.",
-                             phase=phase, required=required(scope), path=location)
-        elif location and name in ("node", "npm", "psql", "pg_config"):
+        if location:
             check_program(report, f"tool.{name}", name, ["--version"],
                           required(scope), phase,
                           expected="v24." if name == "node" else None)
-        elif location and name == "spark-submit":
-            result = common.run_program([location, "--version"], environment={
-                "JAVA_HOME": str(java_home),
-                "PATH": str(java_home / "bin") + os.pathsep + os.environ.get("PATH", ""),
-            })
-            output = result["stdout"] + result["stderr"]
-            version_ok = result["exit_code"] == 0 and str(config["spark"].get("version", "4.3.0")) in output
-            common.add_check(report, f"tool.{name}", "pass" if version_ok else "fail",
-                             output.strip()[:1800] or result.get("error", "No version output."),
-                             phase=phase, required=required(scope), path=location,
-                             exit_code=result["exit_code"])
         else:
             common.add_check(report, f"tool.{name}", "present" if location else "missing",
                              "Launcher found; interactive shell was not started." if location else

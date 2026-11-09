@@ -71,6 +71,21 @@ class SparkLauncherTests(unittest.TestCase):
         self.assertEqual(command, [])
         self.assertFalse(report["executed"])
 
+    def test_project_config_spark_home_is_used_without_path_or_environment(self):
+        path = self.root / "configs/environment.json"
+        config = json.loads(path.read_text(encoding="utf-8"))
+        config["spark"]["home"] = str(self.spark)
+        path.write_text(json.dumps(config), encoding="utf-8")
+        args = launcher.parser().parse_args(["--workspace", str(self.root), "--job", "preflight"])
+        report = launcher.common.new_report("synthetic-config-discovery-test", self.root)
+        with patch.dict(os.environ, {}, clear=True), \
+                patch.object(launcher.common, "resource_snapshot", return_value=self.resources), \
+                patch.object(launcher, "execute_command", side_effect=AssertionError("No process permitted")):
+            command, environment = launcher.inspect(args, report)
+        self.assertEqual(report["selected_spark_home"], str(self.spark))
+        self.assertEqual(environment["SPARK_HOME"], str(self.spark))
+        self.assertEqual(command, [])
+
     def test_dry_run_builds_bounded_local_command_without_outputs(self):
         report, command, _ = self.inspect("--job", "batch", "--output", "data/processed/new", "--dry-run")
         self.assertTrue(report["ready"])

@@ -9,11 +9,13 @@
     "major": 21
   },
   "spark": {
+    "home": "C:/spark/spark-4.3.0-bin-hadoop3",
     "version": "4.3.0",
     "scala_version": "2.13.18",
     "hadoop_version": "3.5.0"
   },
   "sbt": {
+    "home": "C:/Program Files (x86)/sbt",
     "version": "1.10.7"
   },
   "resources": {

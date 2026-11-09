@@ -18,6 +18,7 @@ import zipfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _verification_common as common
+from _toolchain_discovery import selected_home
 
 JOBS = ("preflight", "batch", "rdd", "smoke", "stream")
 UNSAFE = re.compile(r'[\x00-\x1f"&|<>^%!]')
@@ -263,8 +264,8 @@ def inspect(args: argparse.Namespace, report: dict) -> tuple[list[str], dict[str
     config, _ = common.load_config(root, args.config_path)
     java_home = Path(args.java_home or config["java"]["home"]).resolve()
     shell_safe(str(java_home))
-    given_spark = args.spark_home or os.environ.get("SPARK_HOME")
-    spark_home = Path(given_spark).resolve() if given_spark else None
+    spark_home = selected_home(root, args.spark_home, os.environ.get("SPARK_HOME"),
+                               config["spark"].get("home"))
     if spark_home:
         shell_safe(str(spark_home))
     jar = local_path(root, args.jar)

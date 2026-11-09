@@ -224,7 +224,7 @@ class BatchPipelineSpec extends AnyFunSuite with BeforeAndAfterAll {
     val input = Files.createDirectories(workspace.resolve("data/raw/parquet-fixture"))
     val values = Map(
       "ratings.csv" -> "userId,movieId,rating,timestamp\n1,1,4.0,1009843200\n",
-      "movies.csv" -> "movieId,title,genres\n1,Synthetic film,Drama\n2,Synthetic tag-only,Sci-Fi\n",
+      "movies.csv" -> "movieId,title,genres\n1,\"Synthetic \"\"film, quote\"\"\",Drama\n2,Synthetic tag-only,Sci-Fi\n",
       "tags.csv" -> "userId,movieId,tag,timestamp\n1,2,space,1009843200\n",
       "links.csv" -> "movieId,imdbId,tmdbId\n1,0000001,100\n2,0000002,200\n")
     values.foreach { case (name, text) =>
@@ -237,6 +237,7 @@ class BatchPipelineSpec extends AnyFunSuite with BeforeAndAfterAll {
     val silver = DataCleaning.run(spark, bronze, config)
     assert(silver.ratings.count() == 1)
     assert(silver.movies.count() == 2)
+    assert(silver.movies.filter(col("movieId") === 1).head().getAs[String]("title") == "Synthetic \"film, quote\"")
     assert(silver.tags.count() == 1)
     values.foreach { case (name, text) =>
       assert(new String(Files.readAllBytes(input.resolve(name)), StandardCharsets.UTF_8) == text)
