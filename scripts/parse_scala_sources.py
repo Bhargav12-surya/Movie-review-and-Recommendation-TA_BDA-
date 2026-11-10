@@ -3,6 +3,7 @@
 Stops before typing, code generation or execution. No SBT/resolver/Spark job.
 """
 import hashlib
+import argparse
 import json
 import os
 from pathlib import Path
@@ -11,6 +12,9 @@ import uuid
 
 
 def main():
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--include-harness',action='store_true',help='Also parse existing scripts/test-harness Scala sources,without executing them.')
+    arguments=parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     config = json.loads((root / "configs/environment.json").read_text(encoding="utf-8-sig"))
     java = Path(config["java"]["home"]) / "bin/java.exe"
@@ -20,6 +24,7 @@ def main():
         print(json.dumps({"status": "blocked", "reason": "Exact local parser toolchain missing; no resolver fallback."}))
         return 2
     sources = sorted((root / "scala/src").rglob("*.scala"))
+    if arguments.include_harness:sources += sorted((root/'scripts/test-harness').glob('*.scala'))
     classpath = os.pathsep.join(map(str, jars))
     environment = os.environ.copy()
     for name in ("JAVA_TOOL_OPTIONS", "_JAVA_OPTIONS", "JDK_JAVA_OPTIONS", "CLASSPATH"):

@@ -1,0 +1,4 @@
+# Manual, test-only additions to the existing reviewed backend packages.
+# Python3.11 compatible candidate: https://pypi.org/project/httpx/0.28.1/
+# No resolution/install occurs in generated runners. Verify the complete stack later.
+httpx==0.28.1

@@ -1,5 +1,5 @@
 from sqlalchemy import select,func
-from backend.app.models import Movie,MovieEmbedding,Preference,Rating,Review,ModelArtifact
+from backend.app.models import Movie,MovieEmbedding,Preference,Rating,Review,ModelArtifact,Interaction
 from backend.app.core.config import ROOT
 from backend.app.repositories.catalogue import public_movie
 from ml.common.artifacts import read_json,safe_path
@@ -28,10 +28,18 @@ def for_user(session,user,settings,k=12,filters=None):
             by_id[str(row.movie_id)].update(embedding=row.embedding.tolist(),embedding_model_version=row.model_version)
     ratings=session.scalars(select(Rating).where(Rating.user_id==user.id)).all()
     history=[{'movie_id':str(row.movie_id),'event_type':'rating','rating':float(row.value),'personalization_permitted':True} for row in ratings]
-    seen={str(value) for value in session.scalars(select(Review.movie_id).where(Review.user_id==user.id,Review.is_deleted.is_(False))).all()}
-    profile=build_profile({'genre_preferences':preference.genres,'theme_preferences':preference.themes,
-        'ratings':{str(row.movie_id):float(row.value) for row in ratings},'seen_movie_ids':list(seen)},history,catalogue,{'rating':1.0})
     config=read_json(safe_path(settings.hybrid_config,ROOT))
+    event_weights={'rating':1.0}
+    if config.get('interaction_weights_validated') is True:
+        event_weights=config['interaction_weights']
+        events=session.scalars(select(Interaction).where(Interaction.user_id==user.id,Interaction.event_type.in_(['watched','watchlist']))
+            .distinct(Interaction.movie_id,Interaction.event_type).order_by(Interaction.movie_id,Interaction.event_type,Interaction.created_at.desc()).limit(1000)).all()
+        history += [{'movie_id':str(row.movie_id),'event_type':row.event_type,'personalization_permitted':True} for row in events]
+    seen={str(value) for value in session.scalars(select(Review.movie_id).where(Review.user_id==user.id,Review.is_deleted.is_(False))).all()}
+    explicit={'ratings':{str(row.movie_id):float(row.value) for row in ratings},'seen_movie_ids':list(seen)}
+    if preference.genres:explicit['genre_preferences']=preference.genres
+    if preference.themes:explicit['theme_preferences']=preference.themes
+    profile=build_profile(explicit,history,catalogue,event_weights)
     config['filters']=filters or {}
     scores=None
     if settings.factor_directory and settings.factor_mapping:

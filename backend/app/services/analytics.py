@@ -6,7 +6,7 @@ from backend.app.core.errors import ServiceUnavailable
 from backend.app.repositories.catalogue import movie_or_404
 from ml.common.artifacts import safe_path
 
-def refresh(session,movie_id,settings):
+def refresh(session,movie_id,settings,lease_check=None):
     movie=movie_or_404(session,movie_id,lock=True)
     reviews=session.scalars(select(Review).where(Review.movie_id==movie_id,Review.is_deleted.is_(False),
         Review.evidence_permitted.is_(True),Review.is_synthetic.is_(False),Review.moderation_status=='published').limit(10001)).all()
@@ -44,6 +44,12 @@ def refresh(session,movie_id,settings):
         session.add(MovieScore(movie_id=movie_id,score_type='aspect',target_key=key,evidence_version=movie.evidence_version,
             score=target['score'],payload=target,model_version=target_policy.model_version,method_version=target_policy.method_version))
     from ml.summarization.predict import summarize
-    summary=summarize(evidence,str(movie_id),{'mode':'extractive','maximum_reviews':10000,'maximum_selected_reviews':12})
+    summary_config={'mode':'extractive','maximum_reviews':10000,'maximum_selected_reviews':12}
+    if settings.summarization_config:
+        from ml.common.records import load_config
+        summary_config=load_config(safe_path(settings.summarization_config,ROOT))
+        if summary_config.get('device','cpu')!='cpu':raise ValueError('Use CPU for the optional queued summary; GPU summary requires a separately measured scheduling plan.')
+    summary=summarize(evidence,str(movie_id),summary_config)
     session.add(MovieSummary(movie_id=movie_id,evidence_version=movie.evidence_version,payload=summary))
+    if lease_check:lease_check()
     session.commit()

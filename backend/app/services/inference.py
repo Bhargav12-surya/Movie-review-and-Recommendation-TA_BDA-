@@ -36,3 +36,15 @@ class ModelRuntime:
         import sys
         torch=sys.modules.get('torch')
         if torch is not None and torch.cuda.is_initialized(): torch.cuda.empty_cache()
+
+    def themes(self,session,text,language):
+        row=resolve(session,'themes',language)
+        from ml.themes.data import load_config,ThemeExample
+        from ml.aspect_common.engine import load_trained
+        from ml.themes.task import predict_examples
+        config=load_config(ROOT/row.config_path)
+        _,manifest,model,tokenizer,device=load_trained(config,str(ROOT/row.run_path),self.settings.inference_device)
+        example=ThemeExample('inference',text,(),language,'','inference')
+        result=predict_examples(model,tokenizer,[example],config,device,temperature=manifest['temperature'])[0]
+        result.update(status='analysed',scope='themes_mentioned_in_this_review; not_movie_theme_reception')
+        return {'component':'themes','model_version':row.version,'status':'analysed','payload':result}

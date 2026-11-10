@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Private human-judged grounding or speech test case",
+  "type": "object",
+  "required": ["case_id", "task", "split", "is_synthetic", "human_review_complete", "reviewed_by", "permission_reference", "model_version", "actual_output_path", "actual_output_sha256"],
+  "properties": {
+    "case_id": {"type": "string", "minLength": 1},
+    "task": {"enum": ["query", "summary", "voice"]},
+    "split": {"const": "test"},
+    "is_synthetic": {"const": false},
+    "human_review_complete": {"const": true},
+    "reviewed_by": {"type": "string", "minLength": 1},
+    "permission_reference": {"type": "string", "minLength": 1},
+    "model_version": {"type": "string", "minLength": 1},
+    "actual_output_path": {"type": "string"},
+    "actual_output_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "evidence_snapshot_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "claims": {"type": "array", "items": {"type": "object", "required": ["claim_id", "support", "evidence_ids"], "properties": {
+      "claim_id": {"type": "string"}, "support": {"enum": ["supported", "contradicted", "unsupported"]},
+      "evidence_ids": {"type": "array", "items": {"type": "string"}}
+    }}},
+    "abstained": {"type": "boolean"},
+    "expected_intent": {"type": "string"},
+    "constraints_correct": {"type": "boolean"},
+    "reference_text": {"type": "string", "maxLength": 4096}
+  },
+  "allOf": [
+    {"if": {"properties": {"task": {"const": "voice"}}}, "then": {"required": ["reference_text"]}, "else": {"required": ["evidence_snapshot_sha256", "claims", "abstained"]}},
+    {"if": {"properties": {"task": {"const": "query"}}}, "then": {"required": ["expected_intent", "constraints_correct"]}}
+  ]
+}

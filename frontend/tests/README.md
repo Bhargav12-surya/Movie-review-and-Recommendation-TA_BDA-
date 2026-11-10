@@ -1,7 +1,9 @@
 # Local browser acceptance sources
 
 Prepared 10 November 2026, Asia/Calcutta. Not executed. Playwright never starts
-the application and these tests never intercept APIs or mock model predictions.
+the application. These tests never mock model predictions; some deliberately
+abort transport requests or block external origins to exercise error/offline
+paths against the real local application.
 
 Manually install the pinned frontend dependencies and an approved Playwright
 Chromium browser first. Start PostgreSQL, API, worker and frontend independently
@@ -31,3 +33,9 @@ The journey covers both desktop and mobile viewports. It does not establish
 speech accuracy, no-network operation, cross-browser accessibility, calibrated
 scores, recommendation quality, full evidence-grounding or concurrent ownership
 behavior. Record those as separate measured acceptance results.
+
+Phase12 adds journeys.spec.ts and reporter.ts. Use the curated reporter through
+scripts/evaluate_all.ps1 -Groups browser -Execute -AllowBrowser after explicit
+RUN_LOCAL_E2E=1 and any additional test-specific opt-ins. Inspect each scenario:
+disabled auth/write/chat/speech cohorts remain skipped,so complete browser
+acceptance is incomplete. No server/browser download/installer is auto-started.

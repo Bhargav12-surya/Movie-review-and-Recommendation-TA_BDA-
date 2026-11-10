@@ -16,12 +16,13 @@ test('real catalogue, movie details and honest audience evidence', async ({page,
   await page.goto(`/movies/${movieId}`);
   await expect(page.getByRole('heading', {name: movie.title, exact: true})).toBeVisible();
   if (movie.scores.overall.score === null) {
-    await expect(page.getByText('Not enough audience reviews yet.', {exact: true}).first()).toBeVisible();
+    await expect(page.getByText(movie.scores.overall.message??'Not enough audience reviews yet.', {exact: true}).first()).toBeVisible();
   }
   // Check actual rendered ordering: the summary component precedes the review list.
-  const summary = page.locator('section').filter({has: page.getByRole('heading', {name: /audience.*summary|review.*summary|what the audience says|from the audience/i})}).first();
-  const summaryCount = await summary.count();
-  expect(summaryCount, 'The movie detail must render its evidence-summary section').toBeGreaterThan(0);
+  const summary = page.locator('section.summary');
+  await expect(summary.getByRole('heading', {name:'What the reviews are saying',exact:true})).toBeVisible();
+  const summaryBeforeReviews=await page.evaluate(()=>{const summary=document.querySelector('section.summary');const reviews=Array.from(document.querySelectorAll('h2')).find(node=>node.textContent==='From the audience');return !!summary&&!!reviews&&Boolean(summary.compareDocumentPosition(reviews)&Node.DOCUMENT_POSITION_FOLLOWING);});
+  expect(summaryBeforeReviews,'Evidence summary must precede individual audience reviews').toBeTruthy();
   await expect(page.getByRole('link', {name: 'Write a review', exact: true})).toBeVisible();
   await expect(page.getByText('Sign in to publish a review', {exact: false})).toBeVisible();
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
@@ -46,34 +47,34 @@ test('signed-in review journey uses actual persistence and approved inference', 
   await page.goto('/auth');
   await page.getByLabel('Email', {exact: true}).fill(process.env.E2E_EMAIL!);
   await page.getByLabel('Password', {exact: true}).fill(process.env.E2E_PASSWORD!);
+  const login=page.waitForResponse(response=>response.url().endsWith('/auth/login')&&response.request().method()==='POST');
   await page.getByRole('button', {name: 'Sign in', exact: true}).click();
+  const loginResponse=await login;expect(loginResponse.status()).toBe(200);
+  const token=(await loginResponse.json()).access_token as string;
   await expect(page).toHaveURL(/\/profile$/);
-  // Next.js client navigation preserves the deliberately in-memory session.
-  await page.getByRole('link', {name: 'Discover', exact: true}).click();
-  const movieLink = page.getByRole('link', {name: movie.title, exact: true}).first();
-  if (await movieLink.count()) {
-    await movieLink.click();
-  } else {
-    await page.getByRole('searchbox').fill(movie.title);
-    await page.getByRole('button', {name: /search|find/i}).click();
-    await page.getByRole('link', {name: movie.title, exact: true}).first().click();
+  let created:string|undefined;
+  try{
+    // Client navigation keeps the deliberately in-memory authenticated session.
+    await page.getByRole('link', {name: 'Discover', exact: true}).click();
+    await page.getByRole('textbox',{name:'Search movie titles',exact:true}).fill(movie.title);
+    await page.getByRole('button',{name:'Find a film',exact:true}).click();
+    await page.locator(`a[href="/movies/${movieId}"]`).first().click();
+    await page.getByLabel('Your review', {exact: true}).fill(process.env.E2E_REVIEW_TEXT!);
+    await page.getByLabel(/Allow this published review to contribute/).uncheck();
+    await page.getByLabel(/Separately allow this review/).uncheck();
+    await page.getByLabel(/Allow similarity checks/).uncheck();
+    const saved = page.waitForResponse(response => response.request().method() === 'POST'
+      && response.url().endsWith(`/movies/${movieId}/reviews`));
+    await page.getByRole('button', {name: 'Publish review', exact: true}).click();
+    const response = await saved;expect(response.status()).toBe(201);
+    const receipt=await response.json();created=receipt.review_id;
+    expect(created).toMatch(/^[0-9a-f-]{36}$/i);
+    await expect(page.getByRole('status').filter({hasText:/Review saved|review is saved|analysis/i}).first()).toBeVisible();
+    if(process.env.E2E_REQUIRE_MODELS==='1'){
+      // This must fail when any required actual approved component is unavailable.
+      await expect(page.getByRole('status').filter({hasText:/analysis complete/i}).first()).toBeVisible({timeout:65_000});
+    }
+  }finally{
+    if(created){const removed=await request.delete(`${backend}/reviews/${created}`,{headers:{Authorization:`Bearer ${token}`}});expect(removed.status()).toBe(204);}
   }
-  await page.getByLabel('Your review', {exact: true}).fill(process.env.E2E_REVIEW_TEXT!);
-  // Research training and audience contribution remain opt-out for this journey.
-  await page.getByLabel(/Allow this published review to contribute/).uncheck();
-  const saved = page.waitForResponse(response => response.request().method() === 'POST'
-    && response.url().endsWith(`/movies/${movieId}/reviews`));
-  await page.getByRole('button', {name: 'Publish review', exact: true}).click();
-  const response = await saved;
-  expect(response.status()).toBe(201);
-  const receipt = await response.json();
-  expect(receipt.review_id).toMatch(/^[0-9a-f-]{36}$/i);
-  await expect(page.getByRole('status').filter({hasText: /Review saved|review is saved|analysis/i}).first()).toBeVisible();
-  if (process.env.E2E_REQUIRE_MODELS === '1') {
-    // This gate must fail when actual approved inference is unavailable.
-    await expect(page.getByRole('status').filter({hasText: /analysis complete/i}).first()).toBeVisible({timeout: 65_000});
-  }
-  // Cleanup is an authenticated UI action on the dedicated account, not a DB reset.
-  await page.getByRole('link', {name: movie.title, exact: true}).count();
-  test.info().annotations.push({type: 'created-review', description: receipt.review_id});
 });

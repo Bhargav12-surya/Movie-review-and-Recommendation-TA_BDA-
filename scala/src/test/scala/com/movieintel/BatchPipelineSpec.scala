@@ -245,37 +245,138 @@ class BatchPipelineSpec extends AnyFunSuite with BeforeAndAfterAll {
     assertThrows[Exception](MovieLensIngestion.run(spark, config))
   }
 
-  test("Bronze ingestion with coalesce preserves all four sources, bounds partitions, and protects raw inputs and overwrite") {
-    val input = Files.createDirectories(workspace.resolve("data/raw/bronze-coalesce-fixture"))
-    val values = Map(
-      "ratings.csv" -> "userId,movieId,rating,timestamp\n1,1,4.0,1009843200\n2,2,3.5,1009843200\n",
-      "movies.csv" -> "movieId,title,genres\n1,Synthetic A,Drama\n2,Synthetic B,Comedy\n",
-      "tags.csv" -> "userId,movieId,tag,timestamp\n1,1,classic,1009843200\n",
-      "links.csv" -> "movieId,imdbId,tmdbId\n1,0000001,100\n2,0000002,200\n")
-    values.foreach { case (name, text) =>
-      Files.write(input.resolve(name), text.getBytes(StandardCharsets.UTF_8))
-    }
-    val output = Files.createDirectories(workspace.resolve("artifacts/bronze-coalesce-run"))
-    val maxPartitions = 2
-    val config = JobConfig(workspace = workspace, input = input, output = output,
-      inputPartitions = maxPartitions, shufflePartitions = 2)
+  private def sha256Hex(path: Path): String = {
+    val digest = java.security.MessageDigest.getInstance("SHA-256")
+    val bytes = Files.readAllBytes(path)
+    digest.digest(bytes).map("%02x".format(_)).mkString
+  }
 
+  private def countParquetPartFiles(dir: Path): Int = {
+    val stream = Files.list(dir)
+    try {
+      stream.filter(p => Files.isRegularFile(p) && p.getFileName.toString.endsWith(".parquet")).count().toInt
+    } finally stream.close()
+  }
+
+  test("Bronze Ingestion Integration: four datasets, schema, provenance, metrics, and safety verification") {
+    val input = Files.createDirectories(workspace.resolve("data/raw/bronze-integration-fixture"))
+    val fixtureData = Map(
+      "ratings.csv" -> "userId,movieId,rating,timestamp\n1,10,4.0,1009843200\n1,20,3.5,1009843300\n2,10,5.0,1009843400\n2,30,2.0,1009843500\n",
+      "movies.csv" -> "movieId,title,genres\n10,Film Ten (2001),Action|Sci-Fi\n20,Film Twenty (2002),Comedy\n30,Film Thirty (2003),Drama\n",
+      "tags.csv" -> "userId,movieId,tag,timestamp\n1,10,cyberpunk,1009843200\n2,30,touching,1009843500\n",
+      "links.csv" -> "movieId,imdbId,tmdbId\n10,0000010,1000\n20,0000020,2000\n30,0000030,3000\n")
+
+    val initialHashes = fixtureData.map { case (name, content) =>
+      val file = input.resolve(name)
+      Files.write(file, content.getBytes(StandardCharsets.UTF_8))
+      name -> sha256Hex(file)
+    }
+
+    val output = Files.createDirectories(workspace.resolve("artifacts/bronze-integration-run"))
+    val configuredPartitions = 2
+    val config = JobConfig(workspace = workspace, input = input, output = output,
+      inputPartitions = configuredPartitions, shufflePartitions = 2)
+
+    // Execute MovieLensIngestion
     val bronze = MovieLensIngestion.run(spark, config)
 
-    assert(bronze.ratings.count() == 2)
-    assert(bronze.movies.count() == 2)
-    assert(bronze.tags.count() == 1)
-    assert(bronze.links.count() == 2)
+    // A. Bronze ingestion verification: 4 directories created, readable, row counts match
+    val stages = Seq("ratings" -> 4L, "movies" -> 3L, "tags" -> 2L, "links" -> 3L)
+    stages.foreach { case (name, expectedCount) =>
+      val stageDir = output.resolve("bronze").resolve(name)
+      assert(Files.isDirectory(stageDir), s"Bronze stage directory $name must exist.")
+      val reloaded = spark.read.parquet(stageDir.toString)
+      assert(reloaded.count() == expectedCount, s"Row count for $name must match fixture.")
+    }
+    assert(bronze.ratings.count() == 4L)
+    assert(bronze.movies.count() == 3L)
+    assert(bronze.tags.count() == 2L)
+    assert(bronze.links.count() == 3L)
 
-    assert(bronze.ratings.rdd.getNumPartitions <= maxPartitions)
-    assert(bronze.movies.rdd.getNumPartitions <= maxPartitions)
-    assert(bronze.tags.rdd.getNumPartitions <= maxPartitions)
-    assert(bronze.links.rdd.getNumPartitions <= maxPartitions)
-
-    values.foreach { case (name, text) =>
-      assert(new String(Files.readAllBytes(input.resolve(name)), StandardCharsets.UTF_8) == text)
+    // B. Partition validation on output
+    val frames = Seq(bronze.ratings, bronze.movies, bronze.tags, bronze.links)
+    frames.foreach { df =>
+      assert(df.rdd.getNumPartitions <= configuredPartitions,
+        s"Output RDD partitions (${df.rdd.getNumPartitions}) must not exceed configured $configuredPartitions.")
+    }
+    stages.foreach { case (name, _) =>
+      val partCount = countParquetPartFiles(output.resolve("bronze").resolve(name))
+      assert(partCount <= configuredPartitions,
+        s"Parquet part file count ($partCount) for $name must not exceed configured $configuredPartitions.")
     }
 
+    // C. Data integrity & provenance verification
+    fixtureData.foreach { case (name, originalContent) =>
+      val file = input.resolve(name)
+      assert(Files.isRegularFile(file), s"Source file $name must still exist.")
+      assert(sha256Hex(file) == initialHashes(name), s"Source file $name checksum must be unchanged.")
+      val currentContent = new String(Files.readAllBytes(file), StandardCharsets.UTF_8)
+      assert(currentContent == originalContent, s"Source content for $name must be unchanged.")
+      val firstLine = currentContent.linesIterator.next()
+      assert(firstLine == originalContent.linesIterator.next(), s"Original header for $name must be preserved.")
+    }
+
+    val provenanceCols = Seq("_source_file", "_source_name", "_ingested_at")
+    frames.foreach { df =>
+      provenanceCols.foreach { colName =>
+        assert(df.columns.contains(colName), s"DataFrame must contain provenance column $colName.")
+      }
+      val names = df.select("_source_name").distinct().collect().map(_.getString(0))
+      assert(names.sameElements(Array("ml-32m")), "_source_name must strictly identify 'ml-32m'.")
+    }
+
+    // D. Ingestion Metrics verification
+    val reportPath = output.resolve("reports").resolve("ingestion.json")
+    assert(Files.isRegularFile(reportPath), "reports/ingestion.json must be written.")
+    val reportDf = spark.read.json(reportPath.toString)
+    val metrics = reportDf.select("metrics.*")
+    assert(metrics.select("ratings_rows").head().getLong(0) == 4L)
+    assert(metrics.select("movies_rows").head().getLong(0) == 3L)
+    assert(metrics.select("tags_rows").head().getLong(0) == 2L)
+    assert(metrics.select("links_rows").head().getLong(0) == 3L)
+    assert(metrics.select("requested_partitions").head().getLong(0) == configuredPartitions.toLong)
+
+    // E. Safety verification
     assertThrows[Exception](MovieLensIngestion.run(spark, config))
+    assert(output.startsWith(workspace.toRealPath()), "Output must be strictly isolated within temporary workspace.")
+    assert(input.startsWith(workspace.toRealPath()), "Input must be strictly isolated within temporary workspace.")
+  }
+
+  test("Bronze Ingestion Partition Validation: coalesce enforces partition limits across different configurations") {
+    val input = Files.createDirectories(workspace.resolve("data/raw/bronze-partition-fixture"))
+    val fixtureData = Map(
+      "ratings.csv" -> "userId,movieId,rating,timestamp\n1,1,4.0,1009843200\n2,2,3.5,1009843200\n3,3,5.0,1009843200\n4,4,2.0,1009843200\n",
+      "movies.csv" -> "movieId,title,genres\n1,M1,Action\n2,M2,Comedy\n3,M3,Drama\n4,M4,Sci-Fi\n",
+      "tags.csv" -> "userId,movieId,tag,timestamp\n1,1,t1,1009843200\n2,2,t2,1009843200\n",
+      "links.csv" -> "movieId,imdbId,tmdbId\n1,01,10\n2,02,20\n3,03,30\n4,04,40\n")
+    fixtureData.foreach { case (name, content) =>
+      Files.write(input.resolve(name), content.getBytes(StandardCharsets.UTF_8))
+    }
+
+    // Configuration 1: inputPartitions = 1 (single partition write)
+    val outputSingle = Files.createDirectories(workspace.resolve("artifacts/bronze-single-part-run"))
+    val configSingle = JobConfig(workspace = workspace, input = input, output = outputSingle,
+      inputPartitions = 1, shufflePartitions = 2)
+    val bronzeSingle = MovieLensIngestion.run(spark, configSingle)
+    Seq(bronzeSingle.ratings, bronzeSingle.movies, bronzeSingle.tags, bronzeSingle.links).foreach { df =>
+      assert(df.rdd.getNumPartitions == 1, "coalesce(1) must yield exactly 1 partition.")
+    }
+    Seq("ratings", "movies", "tags", "links").foreach { name =>
+      val parts = countParquetPartFiles(outputSingle.resolve("bronze").resolve(name))
+      assert(parts == 1, s"coalesce(1) must write exactly 1 parquet file for $name.")
+    }
+
+    // Configuration 2: inputPartitions = 3
+    val outputMulti = Files.createDirectories(workspace.resolve("artifacts/bronze-multi-part-run"))
+    val configMulti = JobConfig(workspace = workspace, input = input, output = outputMulti,
+      inputPartitions = 3, shufflePartitions = 2)
+    val bronzeMulti = MovieLensIngestion.run(spark, configMulti)
+    Seq(bronzeMulti.ratings, bronzeMulti.movies, bronzeMulti.tags, bronzeMulti.links).foreach { df =>
+      assert(df.rdd.getNumPartitions <= 3, "coalesce(3) must not exceed 3 partitions.")
+    }
+    Seq("ratings", "movies", "tags", "links").foreach { name =>
+      val parts = countParquetPartFiles(outputMulti.resolve("bronze").resolve(name))
+      assert(parts <= 3, s"coalesce(3) must not exceed 3 parquet files for $name.")
+    }
   }
 }

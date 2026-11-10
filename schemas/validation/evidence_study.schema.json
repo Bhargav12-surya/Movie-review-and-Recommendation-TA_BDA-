@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Reviewed genuine executed evidence study",
+  "type": "object",
+  "required": ["id", "task", "protocol_id", "evaluation_role", "artifact_path", "artifact_sha256", "reviewed_by", "provenance_reviewed", "expected_fields"],
+  "properties": {
+    "id": {"type": "string", "minLength": 1},
+    "task": {"type": "string", "minLength": 1},
+    "protocol_id": {"type": "string", "minLength": 1},
+    "evaluation_role": {"enum": ["held_out_test", "validation", "calibration_diagnostic", "runtime_acceptance", "exploratory"]},
+    "artifact_path": {"type": "string"},
+    "artifact_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "reviewed_by": {"type": "string", "minLength": 1},
+    "provenance_reviewed": {"const": true},
+    "expected_fields": {"type": "object", "minProperties": 1},
+    "metric_pointers": {"type": "object", "additionalProperties": {"type": "string", "pattern": "^/"}},
+    "check_pointers": {"type": "object"}
+  }
+}

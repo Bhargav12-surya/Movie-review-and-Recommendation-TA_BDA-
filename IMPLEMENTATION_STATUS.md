@@ -8,17 +8,22 @@ Updated: 10 November 2026, Asia/Calcutta.
 |---|---|
 | 0 — foundation | Available foundation checks completed and tested; the full stack is not installed |
 | 1 — data validation/mapping | Implemented and executed on available sources; partial because provenance, canonical mappings and movie-linked annotations remain unresolved |
-| 2 — Scala/Spark | Source implemented; an earlier15-file main snapshot compiled offline using installed Spark. Later edits need recompiling; ScalaTest/Parquet/batch/streaming/UI acceptance remains open |
+| 2 — Scala/Spark | Bronze ingestion, Silver cleaning, and Silver-to-Gold transformations & analytics implemented and verified with standalone Spark integration tests (30/30 assertions passed); main JAR packaged offline (`movieintel-spark_2.13-0.1.0.jar`); full 32M batch run and streaming acceptance remain open |
 | 3 — sentiment and mandatory language extension | Modular source,configs,9 notebooks,20 authored ML test methods and runbook generated; static checks only; no trained/evaluated model |
 | 4 — aspects | Source/configs/tests/notebooks generated; no trained or evaluated aspect models |
 | 5 — themes/topics/embeddings/summaries | Source generated; no actual fitting,embedding generation or summary publication |
 | 6 — review risk | Analytical and actual trainable anomaly source generated; no validated fake-review claim |
 | 7 — audience scoring | Evidence-qualified Python/Scala source and blank methodology templates generated; no real scores or parity test |
 | 8 — recommendations | Real Scala ALS/sampled evaluation and Python hybrid source generated; no fitting,validated factors or ranking result |
-| 9–13 | Not started; no application deployment or integrated inference claim |
+| 9 — backend/database | Modular FastAPI/PostgreSQL/pgvector/auth/migration/model registry/worker/outbox source integrated; dependency installation, migration, actual inference and runtime acceptance pending |
+| 10 — frontend | Next.js/React/TypeScript frontend connected to actual API contracts; final static type check passed; build/browser execution pending |
+| 11 — discovery/voice | Grounded catalogue/evidence/recommendation routing, bounded private context and optional local CPU speech source connected; current parser is documented English rules; genuine retrieval/voice/grounding acceptance pending |
+| 12 — full validation/optimization | Deferred to the user; earlier authored test drafts are unexecuted and do not establish acceptance |
+| 13 — academic/demo preparation | Deferred to the user; any early documentation/final drafts are incomplete and superseded by the through-11 handoff |
 
 The latest instruction is **generate files; the user will implement/run later**.
-The user explicitly expanded this to generate through Phase8 in one pass.
+The user expanded source generation through Phase11 and explicitly deferred
+Phases12–13. Source integration does not establish executed integration.
 Earlier runtime/data gates remain open. Current checks are static; no new
 unit tests,inference,training or Spark jobs run.
 All software/dataset/model downloads remain manual. No package installation,
@@ -284,6 +289,16 @@ It rendered the actual arguments, executed=false, and created no job directory.
 Readiness correctly stayed false. Final UTC/model-path safeguards were retested
 with the28 Scala checks and the8 event tests; the earlier full133-test run passed.
 
+### Task 2.4 — Silver Transformations & Analytics Standalone Spark Validation (10 November 2026)
+
+- Component A (`DataFrameTransformations.scala`): Ratings-to-movies/links joins, join cardinality preservation assertions, chronological window function `user_rating_sequence`, typed Dataset transformations, and physical plan generation.
+- Component B (`MovieAnalytics.scala`): 10 analytical dimensions (rating counts, mean/median ratings, rating distributions, genre coverage & popularity, yearly/monthly activity trends, cold-start item identification, insufficient evidence flags `< 5` ratings, normalized metadata completeness).
+- Component C (`UserAnalytics.scala`): 8 user dimensions (rating counts, mean/stddev ratings, high/low rating counts, activity span, activity tiers `power_user`/`active_user`/`low_activity_user`, genre preference vectors, tag profiles, yearly activity trends).
+- Component D (`RddExamples.scala`): `map`, `flatMap`, `filter`, `reduceByKey`, bounded `groupByKey`, `mapPartitionsWithIndex`, RDD vs DataFrame word count equivalence, and written architectural report comparing `reduceByKey` vs `groupByKey`.
+- Standalone execution: `TransformationsAnalyticsRunner.scala` executed via `spark-submit` on `local[2]` with `--driver-memory 1g`. **30/30 assertions passed** (100%). Log saved to `artifacts/analytics-standalone-validation/spark_execution.log`, summary to `artifacts/analytics-standalone-validation/validation_summary.json`.
+- Offline build: Main Scala source compiled to `artifacts/scala-build/20261110T083033Z-f4ba61d8/movieintel-spark_2.13-0.1.0.jar` using Adoptium JDK 21 and cached Spark 4.3.0 jars.
+- Regression verification: 180/180 Python tests passed. Raw datasets in `data/raw/` untouched.
+
 The newly appeared user-owned requirements/requirements-foundation.txt uses
 floating ranges overlapping existing dependency groups. It was inspected and
 left unchanged; it is not an approved resolved lock or an installation action.
@@ -507,11 +522,80 @@ visible. No protected raw file or application/user identity is manufactured.
 
 The complete local application is still unfinished: genuine neutral/aspect/theme/
 language/sarcasm data,rights,canonical mappings,local model permissions and actual
-CPU/GPU/resume/Spark/quality checks remain prerequisites. Backend/database,
-frontend,chat/voice and full demonstration integration remain phases9-13.
+CPU/GPU/resume/Spark/quality checks remain prerequisites. At that through-8
+snapshot,backend/frontend/discovery source remained future work. The following
+through-11 delivery supersedes that source status; execution gates remain open.
 
 Read [the Phase4-8 file index](documentation/phases4-8/GENERATED_FILES.md) and
 [exact later runbook](documentation/phases4-8/RUNBOOK.md). The next execution work
 continues with environment/final-source Phase2 acceptance,then the legitimate
 NLP inputs and sequential model experiments. No earlier phase is marked complete
 merely because later source files now exist.
+
+## Through-Phase11 handoff — 10 November2026
+
+Latest user instruction: finish source generation/integration through11;
+Phases12–13 will be performed later by the user. All generated files are now
+connected at source level. This is not an executed complete AI application.
+
+Phase9 supplies20 PostgreSQL tables and a frozen migration,real local accounts/
+ownership,canonical catalogue import,versioned reviews and consent,opaque bearer
+sessions,ratings/watchlists/preferences/interactions,actual artifact admission,
+serial sentiment/aspect/theme inference adapters,durable jobs/retries,scoring/
+summary refresh,hybrid recommendations and text-free streaming outbox.
+
+Phase10 supplies the original Framewise Next.js UI,real typed API calls,loading/
+empty/error/responsive patterns,review summary above reviews,real submissions/
+analysis polling,review edits/deletion/consent,stars/watched/watchlists,profile,
+recommendation contributions and grounded companion. No catalogue or predictions
+are fabricated. Manually installed frontend packages/lockfile were preserved.
+
+Phase11 supplies documented English analytical parsing,actual catalogue/year
+disambiguation,genre/theme/runtime/exclusion constraints,compatible pgvector
+retrieval,current review/aspect evidence,actual hybrid integration,bounded
+private context and optional cached CPU speech with text fallback. It does not
+claim universal or trained multilingual query NLU. Mood/pace evidence remains
+unavailable until its reviewed methodology/data are configured.
+
+Manual PowerShell preflight/start/database/shutdown scripts and configuration
+examples were generated. They do not install,download,train,build,seed,migrate
+or start anything silently. No operational script body was executed here.
+
+### Current static evidence
+
+- [Python/config/schema/import-path report](artifacts/source_validation/phases9-11-01f0ab5ae7.json):
+  **53 Python files**,5 JSON files and20 ORM/frozen-SQL table column sets passed.
+  Local import targets exist. SQL syntax/constraint/runtime behavior is not proven
+  by column parity. The report records31 TypeScript sources without parsing them.
+- [TypeScript report](artifacts/source_validation/phases9-11-typescript-691e4fa9dc.json):
+  actual installed TypeScript5.9.3,`--noEmit --incremental false`,exit0. It
+  fingerprints34 source/config/lock inputs; no Next.js build/browser was run.
+- [PowerShell report](artifacts/source_validation/phases9-11-powershell-ca3c244f36.json):
+  all7 operational/helper scripts parsed with zero errors; no bodies executed.
+- Scoped `git diff --check` exited0. No staging,commit,restore or reset was done.
+
+The first static SQL-column checker report failed because its own tokenization
+misread CHECK/UNIQUE clauses as columns. The checker was corrected and a new
+successful report retained; this was not a PostgreSQL test failure. Prior
+reports remain untouched and are not reused as validation of later edits.
+
+### Open requirements and next action
+
+Backend dependencies remain absent in the selected Python metadata snapshot;
+Sentence Transformers5.1.2 and Node24.22.2 are present by metadata. No backend
+imports,DB connections/migrations,model inference/training,unit tests,Spark jobs,
+build,browser or services ran in this delivery. Genuine labels/permissions,
+canonical mappings,evaluated local artifacts,score/hybrid approvals and current
+hardware/headroom validation remain prerequisites. Full revocation/consent-export
+reconciliation,stream pending-edit lag,large online catalogue candidate policy,
+theme/genre reception research and complete runtime acceptance remain explicit.
+
+Existing backend/discovery/frontend tests and documentation/final drafts were
+created before the user's final deferral; they are preserved unexecuted and are
+not completed Phases12/13. No additional Phase12/13 execution or claimed metrics.
+
+Read [the through-11 runbook](documentation/phases9-11/RUNBOOK.md) and
+[generated file index](documentation/phases9-11/GENERATED_FILES.md). The next
+operator action is earlier-phase environment/Phase2 preflight and closure of
+Phase1 mapping/annotation/permission gates,then approved Phases3–8 model runs.
+The runbook gives the subsequent manual DB/artifact/API/worker/frontend order.

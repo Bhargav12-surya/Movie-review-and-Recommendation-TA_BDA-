@@ -1,6 +1,7 @@
 """Explicit manual administration. No automatic database creation or seeding."""
 import argparse
 import getpass
+import re
 from pathlib import Path
 from sqlalchemy import select,delete
 from backend.app.core.config import ROOT,get_settings
@@ -30,17 +31,31 @@ def main():
             from ml.common.data import _rows
             registry=safe_path(args.registry,ROOT);ids,blockers=load_registry(registry)
             if blockers:raise ValueError('Approved canonical registry required.')
+            input_path=safe_path(args.input,ROOT);input_hash=sha256(input_path);registry_hash=sha256(registry)
             seen=set()
-            for index,row in enumerate(_rows(safe_path(args.input,ROOT))):
+            for index,row in enumerate(_rows(input_path)):
                 if index>=100000 or str(row.get('movie_id')) not in ids or row.get('metadata_use_permitted') is not True or not row.get('license_reference'):
                     raise ValueError('Bounded licensed canonical metadata required; no guessed mappings.')
                 identifier=int(row['movie_id'])
                 if identifier in seen or session.get(Movie,identifier):raise ValueError('Existing or duplicate catalogue ID; update requires a separately reviewed content-version operation.')
                 seen.add(identifier)
+                features=dict(row.get('features',{}))
+                features['import_provenance']={'license_reference':row['license_reference'],'metadata_input_sha256':input_hash,'canonical_registry_sha256':registry_hash}
                 session.add(Movie(id=identifier,title=row['title'],overview=row.get('overview',''),genres=row.get('genres',[]),keywords=row.get('keywords',[]),
                     release_date=row.get('release_date'),runtime_minutes=row.get('runtime_minutes'),original_language=row.get('original_language'),
-                    poster_path=row.get('poster_path'),metadata_source=row['metadata_source'],canonical_mapping_approved=True,features=row.get('features',{})))
-                for source,external in row.get('external_ids',{}).items():session.add(ExternalMovieID(movie_id=identifier,source=source,external_id=str(external)))
+                    poster_path=row.get('poster_path'),metadata_source=row['metadata_source'],canonical_mapping_approved=True,features=features))
+                external_ids=row.get('external_ids',{})
+                if external_ids and (row.get('external_mappings_approved') is not True or not row.get('external_mapping_reference')):
+                    raise ValueError('External movie mappings require explicit reviewed provenance independent of title matching.')
+                for source,external in external_ids.items():
+                    if source=='imdb':
+                        if not isinstance(external,str) or not re.fullmatch(r'(?:tt)?[0-9]{7,10}',external):raise ValueError('IMDb IDs must preserve their validated original digit strings.')
+                        if not external.startswith('tt'):external='tt'+external
+                    elif source in {'tmdb','movielens'}:
+                        if isinstance(external,bool) or not re.fullmatch(r'[1-9][0-9]*',str(external)):raise ValueError('Positive validated external ID required.')
+                    else:raise ValueError('Unsupported external namespace; review its identifier policy before import.')
+                    session.add(ExternalMovieID(movie_id=identifier,source=source,external_id=str(external)))
+            if sha256(input_path)!=input_hash or sha256(registry)!=registry_hash:raise ValueError('Catalogue input changed during import; transaction is not committed.')
             session.commit()
         else:
             from ml.embeddings.predict import encode

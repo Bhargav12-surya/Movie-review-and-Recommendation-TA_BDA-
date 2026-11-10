@@ -1,4 +1,5 @@
 from uuid import UUID
+from datetime import datetime,timezone,timedelta
 from fastapi import APIRouter,Depends,HTTPException,UploadFile,File,Response
 from sqlalchemy import select,delete,func
 from sqlalchemy.orm import Session
@@ -15,6 +16,8 @@ router=APIRouter(prefix='/chat',tags=['grounded discovery'])
 def query(body:ChatInput,user:User=Depends(get_current_user),session:Session=Depends(get_session)):
     conversation=session.scalar(select(Conversation).where(Conversation.id==body.conversation_id).with_for_update()) if body.conversation_id else None
     if body.conversation_id and (conversation is None or conversation.user_id!=user.id): raise HTTPException(404,detail='conversation_not_found')
+    if conversation and conversation.updated_at<datetime.now(timezone.utc)-timedelta(hours=24):
+        raise HTTPException(410,detail='conversation_expired_start_new')
     if conversation is None:
         conversation=Conversation(user_id=user.id,state={});session.add(conversation);session.flush()
     if session.scalar(select(func.count()).select_from(ChatTurn).where(ChatTurn.conversation_id==conversation.id))>=40:

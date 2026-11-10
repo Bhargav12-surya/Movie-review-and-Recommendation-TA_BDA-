@@ -1,0 +1,10 @@
+{
+  "execution_approved": false,
+  "reviewed_by": null,
+  "network_disconnected_confirmed_by_operator": false,
+  "endpoints": [
+    {"id": "frontend", "url": "http://127.0.0.1:3000", "expected_statuses": [200]},
+    {"id": "backend_schema", "url": "http://127.0.0.1:8000/api/v1/ready", "expected_statuses": [200]}
+  ],
+  "operator_evidence": {}
+}

@@ -722,3 +722,71 @@ If NLP data remains missing, continue the authorized MovieLens Phase 2 work and 
 - [x] User approval received for implementation and the narrow dependency-based Phase 2 exception; installation and training are separate.
 
 Current next step: review the generated Phase 3 files and documentation/phase3/RUNBOOK.md. Spark/SBT were subsequently found at configured manual-install paths, and an earlier snapshot of all 15 Scala main sources compiled offline; final-source recompilation and Phase 2 runtime checks remain pending. After the current source-only handoff, the next execution step is the environment/Phase 2 preflight in documentation/bda/RUNBOOK.md. No retraining or installation was performed for file generation.
+
+## 11. Latest source delivery boundary: through Phase11
+
+10 November2026,Asia/Calcutta. The user's latest explicit scope is to finish
+generation/integration through Phase11 and perform Phases12–13 later. This
+supersedes the earlier through-8 batch boundary for source generation only.
+Do not mark an earlier data/model/runtime gate complete from these files.
+
+The remaining source sequence implemented is:
+
+1. Phase9 ORM/frozen PostgreSQL migration and session lifecycle.
+2. Real local authentication/ownership, typed schemas, catalogue/review/profile
+   routes, idempotency, revision/consent invalidation and durable jobs.
+3. Actual approved-model adapters for sentiment/aspects/theme mentions, serial
+   worker, reviewed score policies, evidence/optional generative summary,
+   hybrid recommender and atomic text-free streaming outbox.
+4. Phase10 original Next.js UI, typed API/auth state, catalogue/detail/scores,
+   summary-before-reviews, composer, ratings/watched actions, watchlist,
+   profile/consent/revisions and actual recommendation explanations.
+5. Phase11 catalogue query parsing/entity disambiguation, SQL/vector/evidence/
+   hybrid routing, bounded private context and optional local CPU speech.
+6. Through-11 runbook, explicit manual startup/database scripts and static
+   Python/JSON/import/SQL-column/PowerShell/TypeScript checks only.
+
+Dependencies remain genuine canonical metadata/reviews/annotations, manually
+installed backend/PostgreSQL/pgvector, approved evaluated model artifacts,
+reviewed scoring/hybrid policies, optional cached speech and actual execution.
+Node/frontend packages were manually supplied and retained; no automatic
+installation/resolution occurred. See documentation/phases9-11/RUNBOOK.md for
+concrete file groups, per-phase objectives, outputs, commands and acceptance
+checklists. The next executable step stays the earlier environment/Phase2
+preflight and missing Phase1 approvals, followed by authorized Phases3–8 runs;
+later manual app setup does not bypass those dependencies. Phases12–13 are
+deferred; already-authored drafts are preserved unexecuted.
+
+## 12. Phase12–13 source authorization and execution handoff
+
+Latest instruction,10 November2026,Asia/Calcutta: generate Phase12 and13 in one
+batch for later user implementation. The user additionally requested verification
+of all files and a full implementation sequence in chat. Verification remains
+static under the explicit no-runtime scope; no dependency resolution,DB,Spark,
+model inference/training,unit/browser tests,build or service is authorized here.
+
+Source execution order prepared for later use:
+
+1. Review the active-source static reports and source fingerprints.
+2. Close earlier Phase1/2/3–8 data,toolchain,model and scientific-policy gates.
+3. Execute fixed selected unit and disposable-PostgreSQL suites; separately
+   opt in to committed-owned-schema two-connection tests and real browsers.
+4. Start the actual approved localhost system using the earlier explicit scripts.
+5. Execute real trained-model load/infer/reload checks,full user journeys,
+   failure/context/voice paths and measured bounded HTTP/RAM/GPU sampling.
+6. Prepare genuine Python/Scala score comparison exports,run actual Scala
+   arithmetic,project independent Parquet current-state exports and compare
+   final batch/stream state. Preserve replay/restart/quarantine logs separately.
+7. Evaluate genuine human-judged grounding/query/voice cases and register actual
+   report metrics/statuses with hashes,roles,splits and frozen protocols.
+8. Review optimizations only against real before/after measurements; freeze
+   data,model,config,source and dependency snapshots. Notebook15 reads saved
+   comparable reports and never retunes on the final test.
+9. Complete the actual academic report,presentation,syllabus mapping,limitations,
+   privacy/rights review,offline/failure rehearsal and permitted artifact bundle.
+
+See documentation/phase12/RUNBOOK.md and documentation/final/README.md for the
+implemented file groups,dependencies,expected outputs and full acceptance
+checklists. New validation scripts default to a plan and require explicit
+execution; example scientific configs approve nothing. These generated phases
+remain unaccepted until the user supplies genuine evidence and runs them.

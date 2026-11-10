@@ -15,8 +15,9 @@ def transcribe(file,settings,root):
         if not path.resolve().is_relative_to(folder) or record.get('files_sha256',{}).get(path.relative_to(folder).as_posix())!=sha256(path):
             raise ValueError('Speech model fingerprint differs.')
     from faster_whisper import WhisperModel
-    model=WhisperModel(str(folder),device='cpu',compute_type='int8',local_files_only=True)
+    model=WhisperModel(str(folder),device='cpu',compute_type='int8',local_files_only=True,cpu_threads=2,num_workers=1)
     segments,info=model.transcribe(file,beam_size=1,vad_filter=False)
+    if info.duration>45:raise ValueError('Voice input is limited to45seconds; use a shorter recording or text.')
     result=[]
     for segment in segments:
         if segment.end>45 or sum(len(part) for part in result)>2000: raise ValueError('Voice input is limited to45seconds/2000characters.')

@@ -363,3 +363,23 @@ no weights were downloaded. The last resource snapshot was about49.147GiB free
 disk and less than2GiB available RAM, below the default Spark headroom guard.
 These values are not current readiness guarantees. The user's current scope is
 file generation with static validation; new runtime probes are deferred.
+
+## 15. Through-Phase11 source-delivery observation
+
+10 November2026,Asia/Calcutta. Metadata only: selected root Python3.11.9;
+Node24.22.2 at `C:\Program Files\nodejs\node.exe`; user-installed frontend
+package-lock/node_modules with TypeScript5.9.3 and Next16.4.5 were observed.
+Direct frontend pins match installed metadata and the root lock entries.
+Static TypeScript checking passed; build/browser/service execution did not run.
+
+Root Python metadata still lacks fastapi,starlette,uvicorn,SQLAlchemy,psycopg,
+pgvector,alembic,pydantic,pydantic-settings,pwdlib and python-multipart.
+Sentence Transformers5.1.2 is now present; faster-whisper remains absent. No
+backend/NLP imports,database connection,CUDA operation,installation or model
+inference was performed for this snapshot. Previous available RAM/disk and
+cu130 tensor checks are historical, not a readiness guarantee for this stack.
+
+Follow PREREQUISITES.md section12 for the manual-install/verification order and
+documentation/phases9-11/RUNBOOK.md for source contracts. The user deferred
+Phases12–13. Current-source static reports are recorded in
+IMPLEMENTATION_STATUS.md; they do not establish runtime acceptance.

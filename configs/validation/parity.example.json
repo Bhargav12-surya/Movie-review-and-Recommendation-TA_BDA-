@@ -1,0 +1,10 @@
+{
+  "execution_approved": false,
+  "reviewed_by": null,
+  "kind": "score",
+  "left": {"path": null, "sha256": null},
+  "right": {"path": null, "sha256": null},
+  "scope": [],
+  "tolerance": 0.0000001,
+  "declared_pending_review_ids": []
+}

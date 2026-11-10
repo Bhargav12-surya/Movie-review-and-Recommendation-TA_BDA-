@@ -52,6 +52,12 @@ class ChatInput(Strict):
     text:str=Field(min_length=1,max_length=2000)
     conversation_id:UUID|None=None
 
+class InteractionInput(Strict):
+    event_type:str=Field(pattern=r'^watched$')
+
+class SummaryApprovalInput(Strict):
+    decision_path:str=Field(min_length=1,max_length=500)
+
 class ArtifactInput(Strict):
     component:str=Field(pattern=r'^(sentiment_transformer|multilingual_sentiment|aspect_extraction|aspect_sentiment|embeddings|themes)$')
     version:str=Field(pattern=r'^[A-Za-z0-9][A-Za-z0-9:_-]{0,127}$')

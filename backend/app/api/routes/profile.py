@@ -1,4 +1,4 @@
-from fastapi import APIRouter,Depends,Response
+from fastapi import APIRouter,Depends,Response,HTTPException
 from sqlalchemy import select,delete,func
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
@@ -7,7 +7,7 @@ from backend.app.database.session import get_session
 from backend.app.models import User,Preference,Rating,Watchlist,Movie,Review,Interaction
 from backend.app.repositories.catalogue import movie_or_404,public_movie
 from backend.app.services.reviews import public_review
-from backend.app.schemas.requests import Preferences,RatingInput
+from backend.app.schemas.requests import Preferences,RatingInput,InteractionInput
 
 router=APIRouter(prefix='/me',tags=['profile'])
 
@@ -50,10 +50,24 @@ def watchlist(user:User=Depends(get_current_user),session:Session=Depends(get_se
 def add_watchlist(movie_id:int,user:User=Depends(get_current_user),session:Session=Depends(get_session)):
     movie_or_404(session,movie_id)
     session.execute(insert(Watchlist).values(user_id=user.id,movie_id=movie_id).on_conflict_do_nothing())
+    preference=session.get(Preference,user.id)
+    if preference and preference.personalization_permitted:
+        exists=session.scalar(select(Interaction.id).where(Interaction.user_id==user.id,Interaction.movie_id==movie_id,Interaction.event_type=='watchlist').limit(1))
+        if not exists:session.add(Interaction(user_id=user.id,movie_id=movie_id,event_type='watchlist',payload={'source':'explicit_save'}))
     session.commit()
     return {'movie_id':str(movie_id),'saved':True}
 
+@router.put('/interactions/{movie_id}')
+def interaction(movie_id:int,body:InteractionInput,user:User=Depends(get_current_user),session:Session=Depends(get_session)):
+    movie_or_404(session,movie_id)
+    preference=session.get(Preference,user.id)
+    if preference is None or not preference.personalization_permitted:raise HTTPException(403,detail='personalization_consent_required')
+    exists=session.scalar(select(Interaction.id).where(Interaction.user_id==user.id,Interaction.movie_id==movie_id,Interaction.event_type==body.event_type).limit(1))
+    if not exists:session.add(Interaction(user_id=user.id,movie_id=movie_id,event_type=body.event_type,payload={'source':'explicit_user_action'}))
+    session.commit();return {'movie_id':str(movie_id),'event_type':body.event_type,'recorded':True}
+
 @router.delete('/watchlist/{movie_id}',status_code=204)
 def remove_watchlist(movie_id:int,user:User=Depends(get_current_user),session:Session=Depends(get_session)):
-    session.execute(delete(Watchlist).where(Watchlist.user_id==user.id,Watchlist.movie_id==movie_id));session.commit()
+    session.execute(delete(Watchlist).where(Watchlist.user_id==user.id,Watchlist.movie_id==movie_id))
+    session.execute(delete(Interaction).where(Interaction.user_id==user.id,Interaction.movie_id==movie_id,Interaction.event_type=='watchlist'));session.commit()
     return Response(status_code=204)

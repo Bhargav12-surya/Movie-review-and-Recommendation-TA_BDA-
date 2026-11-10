@@ -4054,3 +4054,80 @@ recommendation evaluation and actual deployment remain unexecuted acceptance wor
 See documentation/phases4-8/RUNBOOK.md,its generated-file index and
 IMPLEMENTATION_STATUS.md for precise source paths,current blockers and later
 commands. A static source check is not a model result or an integrated application.
+
+---
+
+# 35. Through-Phase11 source integration ledger
+
+User scope,10 November2026 (Asia/Calcutta): finish source generation and
+integration through Phase11; the user will perform Phases12–13 later. This is
+source preparation, with no installation,training,inference,migration,services,
+build or runtime acceptance implied. Earlier data/phase gates remain open.
+
+The concrete local implementation separates FastAPI requests, PostgreSQL state
+and one durable worker. It uses existing plan decision D4 as reviewable source:
+transactional job/outbox records, atomic review revisions, immediate snapshot
+invalidation and conditional prediction publication. It does not introduce an
+external broker/cloud dependency. Local opaque bearer sessions with Argon2
+hashing implement authenticated ownership without default admin credentials.
+Canonical movie IDs, application accounts and MovieLens identities remain
+separate. Both aspect components retain registered dependency versions.
+
+The Next.js frontend calls actual versioned APIs and displays absent evidence,
+pending/unavailable analysis and model/policy prerequisites honestly. Summary
+evidence appears above reviews. Optional hierarchical generation with actual
+local pretrained weights produces candidates; public novel text still needs
+human factuality approval. Extractive evidence is the default. No metadata
+theme relevance or overall sentiment substitutes for target reception.
+
+Discovery uses documented English analytical parsing and actual catalogue,
+pgvector,evidence and hybrid inputs, with ambiguity/unsupported-constraint
+responses. This is not demonstrated universal or multilingual query NLU.
+The optional cached offline speech adapter runs on CPU int8 and retains text.
+The source policy caps conversations,body sizes,queue depth and online catalogue
+work for the laptop; performance and thresholds are not claimed measured.
+
+Structured Streaming consumes the text-free durable outbox. Database snapshots
+invalidate on edits immediately, but an old stream value may remain while new
+analysis is pending/unavailable; later execution must reconcile it. Source
+replay guards do not prove end-to-end exactly-once delivery. Model revocation,
+consent export/unlearning, large-catalogue candidate preparation and full
+offline/concurrency/browser/model acceptance remain explicit validation work.
+
+See documentation/phases9-11/RUNBOOK.md and IMPLEMENTATION_STATUS.md for the
+source contracts,manual operational order,current static evidence and limits.
+No previously proposed scientific thresholds or architectural gate is declared
+approved merely because a concrete source implementation exists.
+
+---
+
+# 36. Phase12–13 source and evidence ledger
+
+10 November2026,Asia/Calcutta. The user superseded the earlier deferral with
+source generation for Phase12 and13,and then requested all-file verification
+plus the implementation sequence in chat. Execution is still deferred.
+
+The validation package prepares fixed local unit/disposable-DB/browser runners,
+actual model reload checks,bounded localhost latency/resource measurements,
+real Python/Scala score exports and arithmetic comparison,Parquet state
+projection,batch/stream parity,human grounding/query/WER evaluation,an actual
+report register,read-only rehearsal and a permission-reviewed bundle allowlist.
+No fake data,metrics,model outputs or audience IDs are created for evaluation.
+Small invented regression fixtures remain isolated in test storage only.
+
+Queue correctness source now checks dedupe before capacity and reserves exactly
+two bounded worker-only child slots for event/refresh publication. Child jobs
+drain before more analysis. The change is covered by authored contracts but is
+not an executed race/recovery guarantee. Existing user-edited Scala analytics
+and historical implementation copies are preserved.
+
+Final documentation maps actual source to BDA/TA evidence,distinguishes methods
+from measured results,and records missing scientific/coursework components.
+Model reload agreement is distinct from training-resume equivalence; state
+parity is distinct from restart/exactly-once proof; sampled resources are distinct
+from actual peak allocations; recorded evidence is distinct from scientific
+approval. All such acceptance gates remain explicit.
+
+See documentation/phase12/RUNBOOK.md,documentation/final/README.md and the latest
+IMPLEMENTATION_STATUS.md static reports. Dataset/model/install/runtime work is
+not silently authorized by these generated entry points.

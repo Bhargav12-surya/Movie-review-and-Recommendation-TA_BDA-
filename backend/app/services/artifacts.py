@@ -30,6 +30,8 @@ def promote(session,body):
         if manifest.get('task') not in {'three_class_movie','multilingual_movie'} or manifest.get('labels')!={'negative':0,'neutral':1,'positive':2}:
             raise ValueError('A real three-class domain model is required; binary IMDb cannot be promoted here.')
     report=read_json(safe_path(decision['evaluation_path'],ROOT))
+    if not isinstance(report.get('metrics'),dict) or not report['metrics']:
+        raise ValueError('An actual nonempty held-out metric report is required; an approval template is insufficient.')
     if report.get('split')!='test' or report.get('model_manifest_sha256')!=sha256(run/'model_manifest.json') or decision.get('evaluation_sha256')!=sha256(safe_path(decision['evaluation_path'],ROOT)):
         raise ValueError('A matching actual held-out evaluation is required.')
     if body.component=='embeddings' and manifest.get('pretrained') is True:

@@ -1,0 +1,4 @@
+# Optional Phase11 CPU speech only. Manual resolution/installation; not a lockfile.
+# Official release: https://pypi.org/project/faster-whisper/1.2.1/
+# Existing PyTorch CUDA support does not verify CTranslate2 GPU compatibility.
+faster-whisper==1.2.1

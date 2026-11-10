@@ -10,6 +10,26 @@ Accepted progress authorization, 9 November 2026 (Asia/Calcutta): the user appro
 
 Latest scope, 9 November 2026 (Asia/Calcutta): the user then instructed **"just generate files, i implement later"** and **"continue and generate files"**. Generate the Phase 3 classical/Transformer sentiment and mandatory language-extension source, configs, notebooks, tests and documentation while Phase 2 runtime acceptance remains open. This narrowly permits source preparation before the execution gate; it does not complete or waive that gate. Limit current verification to static syntax/configuration checks. Do not run new training, fitting, evaluation, unit tests, Spark jobs, services, dependency resolution or downloads in this file-generation delivery. The user will run the documented commands later. Preserve earlier executed evidence with its source hashes and describe later edits as unexecuted. Continue the remaining phases in order after the relevant dependencies and execution scope are approved.
 
+Latest source boundary, 10 November 2026 (Asia/Calcutta): the user requested
+**"finish generation and integration upto phase-11 completely, i'll do the phase 12 & 13 later"**.
+Generate and connect Phase9 backend/PostgreSQL/model-worker source, Phase10
+Next.js UI and Phase11 grounded discovery/offline speech. Static parsing and
+TypeScript type checking are allowed. Do not install, resolve packages, download,
+train, run inference or tests, migrate/connect databases, build/start applications
+or publish. Earlier data/runtime acceptance gates remain open. Phases12–13 are
+deferred to the user; any files generated before this scope correction are
+preserved as unexecuted drafts. Follow documentation/phases9-11/RUNBOOK.md.
+
+Subsequent source authorization,10 November2026 (Asia/Calcutta): the user now
+requests Phase12 and Phase13 in one batch, **"just generate codes, i'll implement
+it later"**. Finish test/harness/parity/benchmark/evidence/rehearsal/bundle source
+and academic/demo documentation. This supersedes the preceding deferral only
+for file generation. Static AST/config/PowerShell/TypeScript checks are allowed;
+do not run tests,inference,training,DB operations,Spark,builds,services,installers,
+resolvers or downloads. No scientific/runtime phase is accepted by source
+presence. Keep all real results unmeasured until user execution and record the
+actual current static checks separately.
+
 ## Preserve the workspace
 
 Expanded source-only scope, 10 November 2026 (Asia/Calcutta): the user requested **"generate upto phase-8 in one go/shot"**. Prepare phase4 aspect extraction/target sentiment,phase5 themes/topics/embeddings/summaries,phase6 risk,phase7 scoring and phase8 ALS/hybrid recommendation files in order. Static parsing/file-contract checks are allowed; do not execute model inference,fits,training,evaluation,unit tests,Spark jobs,services,installers,resolvers or downloads during this delivery. Preserve incomplete earlier execution/data gates and do not mark any generated phase accepted. Later phases9-13 are outside this source batch. See documentation/phases4-8/RUNBOOK.md and IMPLEMENTATION_STATUS.md.

@@ -15,34 +15,8 @@ from backend.tests.postgres_support import PostgresSandbox, database_dependency
 @unittest.skipUnless(os.environ.get('RUN_POSTGRES_TESTS') == '1', 'Disposable PostgreSQL tests require explicit opt-in.')
 class PostgresAPITests(unittest.TestCase):
     def setUp(self):
-        from fastapi.testclient import TestClient
-        from backend.app.main import create_app
-        from backend.app.core.config import BackendSettings
-        from backend.app.database.session import get_session
-        from backend.app.models import User, Movie, AuthSession
-        from backend.app.auth.security import digest, new_token, now
-        self.sandbox = self.enterContext(PostgresSandbox())
-        settings = BackendSettings(_env_file=None, database_password='')
-        with patch('backend.app.main.get_settings', return_value=settings):
-            self.app = create_app()
-        self.app.dependency_overrides[get_session] = database_dependency(self.sandbox.factory)
-        self.client = self.enterContext(TestClient(self.app, raise_server_exceptions=True))
-        self.tokens = []
-        self.users = []
-        with self.sandbox.factory() as session:
-            for index in range(2):
-                user = User(email=f'isolated-{index}@example.invalid', display_name='Synthetic API test account',
-                            password_hash='unused-test-session-fixture')
-                session.add(user); session.flush()
-                token = new_token(); self.tokens.append(token); self.users.append(user.id)
-                session.add(AuthSession(user_id=user.id, token_hash=digest(token), expires_at=now() + timedelta(minutes=5)))
-            session.add(Movie(id=987654321, title='Synthetic isolation fixture', overview='Only for transactional tests.',
-                              metadata_source='synthetic-test-only', canonical_mapping_approved=True, genres=['Drama']))
-            session.commit()
-        self.path = '/api/v1/movies/987654321/reviews'
-        self.body = dict(text='Synthetic API test review, excluded from real audience evidence.', language_code='en',
-                         evidence_permitted=False, training_permitted=False, moderation_permitted=False,
-                         consent_version='isolated-test-only-v1')
+        from backend.tests.fixtures import prepare_api
+        prepare_api(self)
 
     def headers(self, index=0, key='isolated-idempotency-key'):
         return {'Authorization': 'Bearer ' + self.tokens[index], 'Idempotency-Key': key}

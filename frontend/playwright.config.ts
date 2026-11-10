@@ -9,7 +9,7 @@ export default defineConfig({
   retries: 0,
   timeout: 90_000,
   expect: {timeout: 15_000},
-  reporter: [['list']],
+  reporter: [['./tests/reporter.ts']],
   outputDir: '../artifacts/browser-tests',
   use: {
     baseURL: 'http://localhost:3000',

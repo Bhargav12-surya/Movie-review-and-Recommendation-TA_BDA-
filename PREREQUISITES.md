@@ -572,3 +572,63 @@ Use the explicit interpreter and actual CUDA/AMP verification documented above
 for the changed cu132 build. These commands are future actions, not checks run
 in the current file-generation scope. Source-only syntax validation does not
 certify native package ABI, CUDA kernels, checkpoint resume or model quality.
+
+## 12. Through-Phase11 manual-install observations
+
+Observed10 November2026,Asia/Calcutta. No software was installed or resolved by
+this delivery. These scoped metadata checks supersede earlier missing-tool
+entries where stated; historical hardware/CUDA results stay bound to their
+original environment.
+
+- Node24.22.2 was found at `C:\Program Files\nodejs\node.exe`.
+- A user-installed `frontend/package-lock.json` and local node_modules appeared.
+  Declared direct versions and their installed package metadata match. The
+  installed TypeScript5.9.3 `--noEmit --incremental false` check passed on the
+  generated source. No npm resolver, clean reinstall, integrity audit, build or
+  browser was run; these packages are not certified solely by type checking.
+- Root Python3.11.9 package metadata still lacks FastAPI,Starlette,Uvicorn,
+  SQLAlchemy,psycopg,pgvector,Alembic,Pydantic,pydantic-settings,pwdlib and
+  python-multipart. Keep using the selected root interpreter and manually
+  install the reviewed existing `requirements/requirements-backend.txt` group
+  when ready; no duplicate Python/Node installation is necessary.
+- Sentence Transformers5.1.2 is now present by metadata. Native imports and
+  genuine local encoding remain unexecuted. Do not replace it automatically.
+- faster-whisper is absent. Optional CPU speech is declared separately in
+  `requirements/requirements-speech.txt` at the existing candidate1.2.1.
+  Its [official release](https://pypi.org/project/faster-whisper/1.2.1/)
+  supports Python3.11 and bundles audio decoding through PyAV. A separate
+  system FFmpeg installation is not required by that path. Transitive native
+  wheels, model license/hashes and real audio decoding still need manual
+  verification. Do not change NVIDIA/cuDNN for this CPU adapter.
+
+After the earlier phase/data gates and manual installation, verification order
+is selected-interpreter metadata and `pip check`, native backend imports,
+PostgreSQL/pgvector/schema tests, real approved model loading/inference, then
+frontend build/browser and offline speech. The latter runtime actions were not
+performed. `scripts/setup_database.ps1` defaults to metadata preflight only;
+actual migration requires `-ExecuteMigration`. Launch scripts default to no
+startup and require `-Run`. See documentation/phases9-11/RUNBOOK.md.
+
+Phases12–13 are deferred to the user. Do not describe authored test sources,
+documentation drafts or successful TypeScript checking as completed integration.
+
+## 13. Phase12/13 test-only prerequisites
+
+Latest source authorization now includes Phase12/13 for later execution.
+The generated runners use the Python standard library plus the already selected
+project stack. They do not install or resolve anything. One additional test-only
+candidate is `httpx==0.28.1` in requirements/requirements-integration.txt for
+FastAPI's TestClient; see the [official release](https://pypi.org/project/httpx/0.28.1/).
+Python3.11 is within its declared supported range. Complete native/backend/client
+compatibility still needs the later installed-stack tests. Do not replace the
+working CUDA/scientific environment merely to satisfy an old candidate list.
+
+Playwright uses the existing pinned frontend package but requires a manually
+prepared compatible browser. No generated runner downloads that browser or
+starts an application. PyArrow is needed for real Parquet state projection;
+Matplotlib is optional for notebook15 figure export. Neither is automatically
+installed. No new psutil,monitoring service,paid inference or cloud GPU is needed.
+
+Use scripts/evaluate_all.ps1 without -Execute to inspect its plan. Actual unit,
+DB,browser,model,benchmark,parity and academic evidence operations remain later
+explicit actions. Read documentation/phase12/RUNBOOK.md before those actions.

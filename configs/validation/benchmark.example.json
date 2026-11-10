@@ -1,0 +1,15 @@
+{
+  "execution_approved": false,
+  "reviewed_by": null,
+  "requests_per_endpoint": 10,
+  "concurrency": 1,
+  "timeout_seconds": 5,
+  "owned_process_ids": [],
+  "maximum_duration_seconds": 120,
+  "minimum_available_ram_bytes": 1073741824,
+  "endpoints": [
+    {"id": "liveness", "url": "http://127.0.0.1:8000/api/v1/health", "expected_statuses": [200]},
+    {"id": "database_schema", "url": "http://127.0.0.1:8000/api/v1/ready", "expected_statuses": [200]},
+    {"id": "catalogue", "url": "http://127.0.0.1:8000/api/v1/movies", "expected_statuses": [200]}
+  ]
+}

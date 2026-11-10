@@ -28,7 +28,10 @@ def current_scores(session,movie):
 def current_summary(session,movie):
     row=session.scalar(select(MovieSummary).where(MovieSummary.movie_id==movie.id,MovieSummary.evidence_version==movie.evidence_version,
         MovieSummary.is_stale.is_(False)).order_by(MovieSummary.created_at.desc()).limit(1))
-    return row.payload if row else {'status':'no_evidence','summary':None}
+    if row is None:return {'status':'no_evidence','summary':None}
+    payload=dict(row.payload)
+    if payload.get('publication_approved') is not True:payload.pop('generated_candidate',None)
+    return payload
 
 def similar_movies(session,movie,limit=12):
     approved=select(ModelArtifact.version).where(ModelArtifact.component=='embeddings',ModelArtifact.approved.is_(True))

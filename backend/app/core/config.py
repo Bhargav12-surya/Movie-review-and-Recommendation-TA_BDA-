@@ -32,6 +32,7 @@ class BackendSettings(BaseSettings):
     target_score_policies: dict[str,dict[str,str]] = Field(default_factory=dict)
     discovery_minimum_aspect_score: float | None = Field(None, ge=0, le=100)
     review_event_directory: str = 'data/events/reviews-live'
+    summarization_config: str | None = None
 
 
 @lru_cache

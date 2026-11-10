@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "unit_modules": [
+    "tests.foundation.test_verification", "tests.foundation.test_toolchain_discovery", "tests.foundation.test_spark_launcher", "tests.foundation.test_spark_cache",
+    "tests.data_quality.test_annotations", "tests.data_quality.test_imdb", "tests.data_quality.test_io", "tests.data_quality.test_mapping",
+    "tests.data_quality.test_manifest_validation", "tests.data_quality.test_movielens", "tests.data_quality.test_recordio", "tests.data_quality.test_reviews",
+    "tests.data_quality.test_review_events", "tests.data_quality.test_review_pack", "tests.data_quality.test_tmdb", "tests.data_quality.test_cli",
+    "tests.ml.test_common_contracts", "tests.ml.test_data_gates", "tests.ml.test_tfidf_contract", "tests.aspects.test_contracts",
+    "tests.phases4_8.test_evidence_risk", "tests.phases4_8.test_recommendations", "tests.phases4_8.test_scoring",
+    "backend.tests.test_contracts", "discovery.tests.test_parser", "tests.integration.test_validation"
+  ],
+  "postgres_modules": ["backend.tests.test_postgres_api", "backend.tests.test_runtime_guards", "backend.tests.test_postgres_concurrency"],
+  "node_executable": "C:/Program Files/nodejs/node.exe",
+  "test_timeout_seconds": 300,
+  "browser_timeout_seconds": 600,
+  "benchmark_config": null,
+  "parity_config": null,
+  "grounding_config": null,
+  "evidence_config": null
+}

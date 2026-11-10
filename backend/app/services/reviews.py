@@ -45,7 +45,7 @@ def owned(session,user,identifier,lock=False):
     first=session.get(Review,identifier)
     if first is None or first.user_id!=user.id: raise HTTPException(404,detail='review_not_found')
     movie=movie_or_404(session,first.movie_id,lock=lock)
-    row=session.scalar(select(Review).where(Review.id==identifier).with_for_update()) if lock else first
+    row=session.scalar(select(Review).where(Review.id==identifier).with_for_update().execution_options(populate_existing=True)) if lock else first
     if row.is_deleted: raise HTTPException(410,detail='review_deleted')
     return row,movie
 

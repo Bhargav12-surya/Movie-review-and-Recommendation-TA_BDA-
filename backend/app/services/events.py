@@ -8,7 +8,7 @@ from ml.common.artifacts import safe_path
 from backend.app.core.config import ROOT
 from backend.app.repositories.jobs import enqueue
 
-def queue_event(session,review,movie,prediction,settings):
+def queue_event(session,review,movie,prediction,settings,internal=False):
     eligible=not review.is_deleted and review.evidence_permitted and review.moderation_status=='published' and prediction is not None
     event={'event_id':f'app:{review.id}:{review.revision}','review_id':f'app:{review.id}','review_revision':review.revision,
         'movie_id':str(movie.id),'operation':'upsert' if eligible else 'delete',
@@ -18,7 +18,7 @@ def queue_event(session,review,movie,prediction,settings):
         'negative_probability':prediction['payload']['probabilities']['negative'] if eligible else None,
         'model_version':prediction['model_version'] if eligible else None,'canonical_movie_validated':movie.canonical_mapping_approved,
         'consent_eligible':bool(review.evidence_permitted),'moderation_eligible':review.moderation_status=='published','is_synthetic':False}
-    enqueue(session,'publish_event',f'event:{review.id}:{review.revision}',{'event':event},settings.maximum_pending_jobs)
+    enqueue(session,'publish_event',f'event:{review.id}:{review.revision}',{'event':event},settings.maximum_pending_jobs,internal=internal)
 
 def publish(event,settings):
     from scripts.publish_review_events import validate_event

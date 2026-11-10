@@ -24,6 +24,8 @@ def answer(session,query,context,settings,user_id):
     if not resolved and parsed['intent']=='aspect' and context.get('last_movie_id'):
         row=session.get(Movie,context['last_movie_id'])
         if row: resolved=[row]
+    if parsed['intent']=='compare' and len(resolved)!=2:
+        return {'status':'clarification','text':'Name two catalogue titles, for example: Compare Arrival and Interstellar.','movies':[]},context
     if parsed['intent'] in {'movie','compare','aspect'} and resolved:
         profiles=[evidence_profile(session,row) for row in resolved]
         if parsed['intent']=='aspect':
@@ -53,10 +55,11 @@ def answer(session,query,context,settings,user_id):
     conditions=[Movie.canonical_mapping_approved.is_(True)]
     genres=parsed['genres'] or context.get('genres',[])
     if genres: conditions.append(Movie.genres.contains(genres))
-    for genre in parsed['excluded_genres']: conditions.append(~Movie.genres.contains([genre]))
-    themes=parsed['themes']
+    excluded=parsed['excluded_genres'] or context.get('excluded_genres',[])
+    for genre in excluded: conditions.append(~Movie.genres.contains([genre]))
+    themes=parsed['themes'] or context.get('themes',[])
     if themes: conditions.append(Movie.features['themes'].contains(themes))
-    maximum=parsed['maximum_runtime']
+    maximum=parsed['maximum_runtime'] if parsed['maximum_runtime'] is not None else context.get('maximum_runtime')
     if parsed['shorter_followup']:
         base=session.get(Movie,context.get('last_movie_id')) if context.get('last_movie_id') else None
         if not base or not base.runtime_minutes: return {'status':'clarification','text':'Shorter than which movie? Include a title or a minute limit.','movies':[]},context
@@ -91,18 +94,20 @@ def answer(session,query,context,settings,user_id):
     from backend.app.models import User
     try:
         if targets: raise ServiceUnavailable('target_filtered_catalogue_results')
-        result=for_user(session,session.get(User,user_id),settings,12,{'required_genres':genres,'excluded_genres':parsed['excluded_genres'],
+        result=for_user(session,session.get(User,user_id),settings,12,{'required_genres':genres,'excluded_genres':excluded,
             'required_themes':themes,**({'maximum_runtime':maximum} if maximum else {})})
         if result['status']=='available':
             return {'status':'personalized','text':'Results ranked from your actual preferences and available model inputs.',
-                'movies':[row['movie'] for row in result['recommendations']],'recommendations':result['recommendations']},{**context,'genres':genres}
+                'movies':[row['movie'] for row in result['recommendations']],'recommendations':result['recommendations']},{**context,'genres':genres,'excluded_genres':excluded,'themes':themes,'maximum_runtime':maximum}
     except (ValueError,OSError,ServiceUnavailable): pass
     return {'status':'catalogue_filter','text':'Catalogue matches for your constraints; personalized ranking is unavailable.',
-            'movies':[public_movie(row) for row in rows]}, {**context,'genres':genres,'maximum_runtime':maximum}
+            'movies':[public_movie(row) for row in rows]}, {**context,'genres':genres,'excluded_genres':excluded,'themes':themes,'maximum_runtime':maximum}
 
-def process_turn(session,turn_id,settings):
+def process_turn(session,turn_id,settings,lease_check=None):
     turn=session.get(ChatTurn,UUID(turn_id))
     if turn is None or turn.status=='complete': return
     conversation=session.scalar(select(Conversation).where(Conversation.id==turn.conversation_id).with_for_update())
+    if conversation is None:return
     reply,state=answer(session,turn.query,conversation.state or {},settings,turn.user_id)
+    if lease_check:lease_check()
     conversation.state=state;turn.reply=reply;turn.status='complete';session.commit()

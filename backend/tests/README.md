@@ -48,3 +48,26 @@ recovery, lost advisory-lock behavior, concurrent review changes during actual
 inference, approved model promotion/revocation, genuine score-refresh parity,
 Spark replay/reordering and a real browser journey with approved artifacts.
 An authored test file or an opt-in skip does not establish those results.
+
+## Phase12 generated additions
+
+The latest source batch adds fixtures.py,test_runtime_guards.py and
+test_postgres_concurrency.py. The runtime-guard suite uses the actual
+ModelRuntime with an empty registry,so unavailable outputs are genuine and no
+sentiment prediction is mocked. It covers current vector/snapshot gates,
+auth/session expiry,summary withholding,consent/revision/deletion,lease/cancel,
+bounded context,attempt limits,queue dedupe/reserved child capacity and drain
+ordering. These tests were authored,not run.
+
+The two-connection suite additionally requires RUN_POSTGRES_CONCURRENCY=1.
+Its separate CommittedPostgresSandbox commits only its new random owned schema
+and drops only that schema on exit. Existing application schemas are never
+cleared. Review the harness before enabling this explicit database-write mode.
+Both isolated fixtures and private settings remain separate from application
+data; the fixtures patch settings across all accessed routes.
+
+Use scripts/evaluate_all.ps1 -Groups postgres -Execute for the full selected DB
+suite after setting both opt-ins and privately supplying the disposable URL.
+Without the concurrency opt-in,the suite is incomplete rather than passing all
+DB acceptance. The curated runner suppresses exception messages/private inputs.
+httpx0.28.1 is the manual test-only candidate in requirements/requirements-integration.txt.

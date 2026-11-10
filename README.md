@@ -1,5 +1,13 @@
 # Movie Review & Recommendation System
 
+Latest handoff,10 November2026,Asia/Calcutta: source files through Phase13 are
+prepared for later user execution. Current static checks and unresolved runtime/
+scientific gates are recorded in [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md).
+Start with [the through11 app runbook](documentation/phases9-11/RUNBOOK.md),
+[Phase12 execution/validation](documentation/phase12/RUNBOOK.md) and
+[Phase13 academic/demo materials](documentation/final/README.md). No trained
+performance or complete running application is implied by source generation.
+
 > An AI-powered movie intelligence platform combining Big Data
 > Analytics, multilingual Text Analytics, explainable audience insights,
 > and personalized movie discovery.

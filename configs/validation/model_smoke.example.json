@@ -1,0 +1,15 @@
+{
+  "execution_approved": false,
+  "reviewed_by": null,
+  "component": "sentiment_transformer",
+  "device": "cpu",
+  "language_code": "en",
+  "model_config": null,
+  "run_directory": null,
+  "samples_path": null,
+  "samples_sha256": null,
+  "extraction_config": null,
+  "extraction_run": null,
+  "sentiment_config": null,
+  "sentiment_run": null
+}

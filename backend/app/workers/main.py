@@ -1,6 +1,7 @@
 """One database-leased local worker, durable jobs, revision-safe publication."""
 from datetime import datetime,timezone,timedelta
 import json
+import hashlib
 import time
 import uuid
 from sqlalchemy import select,update,text
@@ -22,17 +23,21 @@ def analyse(factory,job,runtime,settings,lease_check):
         if review is None or review.is_deleted or review.revision!=job.payload['revision']: return 'cancelled'
         data={'id':review.id,'movie_id':review.movie_id,'revision':review.revision,'text':review.text,'language':review.language_code}
         results=[]
-        for component,method in [('sentiment',runtime.sentiment),('aspects',runtime.aspects)]:
+        for component,method in [('sentiment',runtime.sentiment),('aspects',runtime.aspects),('themes',runtime.themes)]:
             try:
                 results.append(method(session,data['text'],data['language']))
             except ServiceUnavailable as error:
                 results.append({'component':component,'model_version':'unavailable','status':'unavailable','payload':{'reason':error.code}})
+            except (OSError,ValueError,ImportError,RuntimeError) as error:
+                results.append({'component':component,'model_version':'unavailable','status':'unavailable','payload':{'reason':'local_model_execution_unavailable','error_type':type(error).__name__}})
             finally: runtime.release()
         if review.moderation_permitted:
             from ml.review_risk.predict import predict as risk
-            history=session.scalars(select(Review.text).where(Review.id!=review.id,Review.moderation_permitted.is_(True),
-                Review.is_deleted.is_(False),Review.moderation_status=='published').limit(1000)).all()
-            payload=risk(review.text,list(history))
+            history=session.scalars(select(Review).where(Review.id!=review.id,Review.moderation_permitted.is_(True),
+                Review.is_deleted.is_(False),Review.moderation_status=='published').order_by(Review.created_at.desc(),Review.id).limit(1000)).all()
+            payload=risk(review.text,[row.text for row in history])
+            payload['corpus_snapshot_sha256']=hashlib.sha256(json.dumps([(str(row.id),row.revision,row.text_sha256) for row in history]).encode()).hexdigest()
+            payload['corpus_review_count']=len(history)
             results.append({'component':'risk','model_version':payload['method_version'],'status':'analysed','payload':payload})
     lease_check()
     with factory() as session:
@@ -52,8 +57,8 @@ def analyse(factory,job,runtime,settings,lease_check):
         invalidate(session,movie)
         from backend.app.services.events import queue_event
         sentiment=next((result for result in results if result['component']=='sentiment' and result['status']=='analysed'),None)
-        if sentiment is not None or not review.evidence_permitted:queue_event(session,review,movie,sentiment,settings)
-        enqueue(session,'refresh_movie',f'movie:{movie.id}:{movie.evidence_version}',{'movie_id':movie.id,'evidence_version':movie.evidence_version},settings.maximum_pending_jobs)
+        if sentiment is not None or not review.evidence_permitted:queue_event(session,review,movie,sentiment,settings,internal=True)
+        enqueue(session,'refresh_movie',f'movie:{movie.id}:{movie.evidence_version}',{'movie_id':movie.id,'evidence_version':movie.evidence_version},settings.maximum_pending_jobs,internal=True)
         session.commit()
         return 'succeeded' if complete==len(results) else 'unavailable'
 
@@ -80,11 +85,11 @@ def main():
                     if job.kind=='analyse_review': status=analyse(factory,job,runtime,settings,lease_check)
                     elif job.kind=='refresh_movie':
                         from backend.app.services.analytics import refresh
-                        with factory() as session: refresh(session,job.payload['movie_id'],settings)
+                        with factory() as session: refresh(session,job.payload['movie_id'],settings,lease_check)
                         status='succeeded'
                     elif job.kind=='chat':
                         from backend.app.services.chat import process_turn
-                        with factory() as session: process_turn(session,job.payload['turn_id'],settings)
+                        with factory() as session: process_turn(session,job.payload['turn_id'],settings,lease_check)
                         status='succeeded'
                     elif job.kind=='publish_event':
                         from backend.app.services.events import publish
