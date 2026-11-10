@@ -43,7 +43,7 @@ data/checkpoints/
 *.sqlite3-wal
 *.sqlite3-shm
 *.db
-models/
+/models/
 .cache/
 artifacts/
 logs/

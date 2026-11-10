@@ -183,34 +183,67 @@ def child_environment(java_home: Path, spark_home: Path, root: Path) -> dict[str
     return child
 
 
+
+
 def execute_command(command: list[str], environment: dict[str, str], logs: Path) -> int:
     """Start one owned local job hidden; retain logs, never bootstrap software."""
+
     for value in command:
         shell_safe(value)
+
     actual = command
     flags = 0
+
     if os.name == "nt":
-        comspec = Path(os.environ.get("SystemRoot", "C:/Windows")) / "System32/cmd.exe"
-        # Outer quotes handle a .cmd path with spaces. Metacharacters/expansions
-        # were rejected above; shell=False prevents an additional shell layer.
-        actual = [str(comspec), "/d", "/s", "/c", '"' + subprocess.list2cmdline(command) + '"']
-        flags = subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
-    with (logs / "stdout.log").open("xb") as stdout, (logs / "stderr.log").open("xb") as stderr:
-        process = subprocess.Popen(actual, stdin=subprocess.DEVNULL, stdout=stdout, stderr=stderr,
-                                   env=environment, shell=False, creationflags=flags)
+        comspec = Path(
+            os.environ.get("SystemRoot", "C:/Windows")
+        ) / "System32" / "cmd.exe"
+
+        # Quote each argument individually.
+        command_line = subprocess.list2cmdline(command)
+
+        # Do not wrap the entire command in additional quotes.
+        # CALL correctly invokes the batch file and preserves arguments.
+        actual = f'"{comspec}" /d /c call {command_line}'
+
+        flags = (
+            subprocess.CREATE_NO_WINDOW
+            | subprocess.CREATE_NEW_PROCESS_GROUP
+        )
+
+    with (logs / "stdout.log").open("xb") as stdout, \
+         (logs / "stderr.log").open("xb") as stderr:
+
+        process = subprocess.Popen(
+            actual,
+            stdin=subprocess.DEVNULL,
+            stdout=stdout,
+            stderr=stderr,
+            env=environment,
+            shell=False,
+            creationflags=flags
+        )
+
         try:
             return process.wait()
+
         except KeyboardInterrupt:
-            # This exact PID belongs to this launcher; no unrelated process is targeted.
             if os.name == "nt":
-                subprocess.run(["taskkill", "/PID", str(process.pid), "/T", "/F"],
-                               stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
-                               stderr=subprocess.DEVNULL, check=False,
-                               creationflags=subprocess.CREATE_NO_WINDOW)
+                subprocess.run(
+                    ["taskkill", "/PID", str(process.pid), "/T", "/F"],
+                    stdin=subprocess.DEVNULL,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    check=False,
+                    creationflags=subprocess.CREATE_NO_WINDOW
+                )
             else:
                 process.terminate()
+
             process.wait(timeout=10)
             return 130
+
+
 
 
 def parser() -> argparse.ArgumentParser:

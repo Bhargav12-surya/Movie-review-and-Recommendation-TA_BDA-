@@ -1,0 +1,33 @@
+{
+  "name": "framewise-local",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1 --port 3000",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1 --port 3000",
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "playwright test"
+  },
+  "engines": {
+    "node": ">=24.22.2 <25"
+  },
+  "dependencies": {
+    "next": "16.4.5",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "recharts": "3.3.0",
+    "react-is": "19.3.0"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@types/node": "24.19.2",
+    "tailwindcss": "4.1.17",
+    "@tailwindcss/postcss": "4.1.17",
+    "postcss": "8.5.23",
+    "@playwright/test": "1.65.0"
+  }
+}
+

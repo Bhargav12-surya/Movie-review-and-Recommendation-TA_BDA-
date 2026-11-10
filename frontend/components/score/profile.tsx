@@ -1,0 +1,11 @@
+"use client";
+import {BarChart,Bar,XAxis,YAxis,Tooltip,ResponsiveContainer} from "recharts";import type {Score} from "@/lib/types";
+export function AudienceScore({score}:{score?:Score}){
+ const available=score?.score!==null&&score?.score!==undefined;
+ return <div className="audience-score"><div className={`score-number ${available?"":"muted"}`}>{available?Math.round(score!.score!):"—"}<span>/100</span></div><div><span className="eyebrow">Audience sentiment</span><p>{available?`${score!.review_count} eligible reviews`:score?.message??"Not enough audience reviews yet."}</p>{score?.effective_review_count!==undefined&&available&&<small>Effective evidence: {score.effective_review_count.toFixed(1)}</small>}</div></div>;
+}
+export function ScoreProfile({scores}:{scores:Record<string,Score>}){
+ const distribution=scores.overall?.predicted_class_distribution;const aspects=Object.entries(scores).filter(([key])=>key.startsWith("aspect:"));
+ return <section className="panel"><span className="eyebrow">The audience, in focus</span><h2>More than a single number.</h2>{distribution?<div className="chart" aria-label="Counts of actual sentiment predictions"><ResponsiveContainer width="100%" height={180}><BarChart data={Object.entries(distribution).map(([name,count])=>({name,count}))}><XAxis dataKey="name"/><YAxis allowDecimals={false}/><Tooltip/><Bar dataKey="count" fill="#ddad75" radius={[4,4,0,0]}/></BarChart></ResponsiveContainer></div>:<p className="muted">Sentiment distribution appears when approved review analysis is available.</p>}<div className="aspect-list">{aspects.map(([key,score])=><div key={key}><span>{key.slice(7).replaceAll("_"," ")}</span><strong>{score.score===null?"—":Math.round(score.score)}</strong><small>{score.review_count} reviews</small></div>)}</div>{!aspects.length&&<p className="muted">Aspect scores need their own review evidence. They stay unavailable until it exists.</p>}</section>;
+}
+

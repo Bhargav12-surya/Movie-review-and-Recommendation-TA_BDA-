@@ -1,0 +1,13 @@
+{
+  "split": "test",
+  "selection_frozen_before_test": false,
+  "reviewed_by": null,
+  "rankings_sha256": null,
+  "judgments_sha256": null,
+  "model_revision": null,
+  "catalogue_sha256": null,
+  "genuine_human_judgments": false,
+  "rankings_generated_by_actual_model": false,
+  "validated_language_scope": [],
+  "k": 10
+}

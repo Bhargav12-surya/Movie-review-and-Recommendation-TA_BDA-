@@ -1,0 +1,9 @@
+{
+  "serving_approved": false,
+  "reviewed_by": null,
+  "manifest_sha256": null,
+  "evaluation_path": null,
+  "evaluation_sha256": null,
+  "validated_language_scope": [],
+  "decision_notes": "Copy to a new local decision file only after actual held-out results, licenses, subgroup coverage and hardware validation have been reviewed. This is not an approval."
+}

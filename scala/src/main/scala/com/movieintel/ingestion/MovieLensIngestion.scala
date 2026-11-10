@@ -73,7 +73,7 @@ object MovieLensIngestion {
     val frames = Seq("ratings" -> raw.ratings, "movies" -> raw.movies,
       "tags" -> raw.tags, "links" -> raw.links)
     frames.foreach { case (name, frame) =>
-      PipelineIO.writeParquet(frame.repartition(config.inputPartitions),
+      PipelineIO.writeParquet(frame.coalesce(config.inputPartitions),
         config.stage("bronze", name))
     }
     // Read materialized Bronze rather than reparsing CSV on every later action.

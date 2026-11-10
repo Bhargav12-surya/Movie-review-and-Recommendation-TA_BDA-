@@ -1,0 +1,3 @@
+# Manual installation only. No installer is invoked by application code.
+-r ../requirements/requirements-backend.txt
+

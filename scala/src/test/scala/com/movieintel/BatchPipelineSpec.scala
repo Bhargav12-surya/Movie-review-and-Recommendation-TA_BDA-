@@ -244,4 +244,38 @@ class BatchPipelineSpec extends AnyFunSuite with BeforeAndAfterAll {
     }
     assertThrows[Exception](MovieLensIngestion.run(spark, config))
   }
+
+  test("Bronze ingestion with coalesce preserves all four sources, bounds partitions, and protects raw inputs and overwrite") {
+    val input = Files.createDirectories(workspace.resolve("data/raw/bronze-coalesce-fixture"))
+    val values = Map(
+      "ratings.csv" -> "userId,movieId,rating,timestamp\n1,1,4.0,1009843200\n2,2,3.5,1009843200\n",
+      "movies.csv" -> "movieId,title,genres\n1,Synthetic A,Drama\n2,Synthetic B,Comedy\n",
+      "tags.csv" -> "userId,movieId,tag,timestamp\n1,1,classic,1009843200\n",
+      "links.csv" -> "movieId,imdbId,tmdbId\n1,0000001,100\n2,0000002,200\n")
+    values.foreach { case (name, text) =>
+      Files.write(input.resolve(name), text.getBytes(StandardCharsets.UTF_8))
+    }
+    val output = Files.createDirectories(workspace.resolve("artifacts/bronze-coalesce-run"))
+    val maxPartitions = 2
+    val config = JobConfig(workspace = workspace, input = input, output = output,
+      inputPartitions = maxPartitions, shufflePartitions = 2)
+
+    val bronze = MovieLensIngestion.run(spark, config)
+
+    assert(bronze.ratings.count() == 2)
+    assert(bronze.movies.count() == 2)
+    assert(bronze.tags.count() == 1)
+    assert(bronze.links.count() == 2)
+
+    assert(bronze.ratings.rdd.getNumPartitions <= maxPartitions)
+    assert(bronze.movies.rdd.getNumPartitions <= maxPartitions)
+    assert(bronze.tags.rdd.getNumPartitions <= maxPartitions)
+    assert(bronze.links.rdd.getNumPartitions <= maxPartitions)
+
+    values.foreach { case (name, text) =>
+      assert(new String(Files.readAllBytes(input.resolve(name)), StandardCharsets.UTF_8) == text)
+    }
+
+    assertThrows[Exception](MovieLensIngestion.run(spark, config))
+  }
 }
