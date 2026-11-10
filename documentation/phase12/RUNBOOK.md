@@ -122,7 +122,9 @@ configured limit. This is a prepared fix,not an executed concurrency result.
     `MOVIE_EVALUATION_TOKEN`; tokens/bodies never enter reports. Metrics include
     first observed vs subsequent successful p50/p95,error/blocked counts,elapsed
     throughput and real available RAM/process working-set/device GPU samples.
-    Headers-only timing is not total body-transfer time; first observed is not a
+    Bodies are discarded in bounded chunks for transfer timing; no response text
+    is logged. Blocked schedules do not count as attempted requests or throughput.
+    First observed is not a
     proven cold model cache. Sampling may miss peaks and GPU memory is device-wide.
 
 ## Scoring and streaming parity

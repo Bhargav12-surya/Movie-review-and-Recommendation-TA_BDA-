@@ -54,12 +54,16 @@ def read(value,maximum=8*1024**2):
 def rows(value,maximum_rows=100000,maximum_bytes=128*1024**2):
     source=path(value);total=0
     with source.open('r',encoding='utf-8-sig') as stream:
-        for index,line in enumerate(stream):
+        index=0
+        while True:
+            line=stream.readline(1024**2+1)
+            if not line:break
             total+=len(line.encode('utf-8'))
             if index>=maximum_rows or total>maximum_bytes or len(line)>1024**2:raise ValueError('JSONL export budget exceeded.')
             item=decode(line)
             if not isinstance(item,dict):raise ValueError('Each JSONL row must be an object.')
             yield item
+            index+=1
 
 
 def write(value,payload):
@@ -69,7 +73,7 @@ def write(value,payload):
 
 def run_directory(label):
     if label not in {'phase12','phase13','benchmark','rehearsal','bundle'}:raise ValueError('Unknown report purpose.')
-    target=ROOT/'artifacts'/label/(datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex[:10])
+    target=path(ROOT/'artifacts'/label/(datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'-'+uuid.uuid4().hex[:10]),output=True)
     target.mkdir(parents=True,exist_ok=False)
     return target
 

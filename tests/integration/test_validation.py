@@ -1,5 +1,8 @@
 """Authored only: parity,grounding and test-result failure-path regressions."""
 import unittest
+import io
+from urllib.error import HTTPError
+from unittest.mock import patch
 from validation.parity import score_parity,state_parity
 from validation.grounding import word_errors
 from validation.reporting import comparison
@@ -39,5 +42,19 @@ class ValidationTests(unittest.TestCase):
         self.assertEqual(result.cases[0]['status'],'error');self.assertNotIn('private',str(result.cases))
     def test_empty_or_skipped_scientific_scope_is_not_parity_pass(self):
         self.assertEqual(state_parity([],[])['status'],'incomplete')
+    def test_deliberately_expected_http_unavailability_is_not_misreported(self):
+        from validation.benchmark import request
+        error=HTTPError('http://127.0.0.1:8000/api/v1/ready',503,'isolated fixture',{},io.BytesIO(b'fixture only'))
+        with patch('validation.benchmark.build_opener') as opener:
+            opener.return_value.open.side_effect=error
+            result=request({'id':'isolated-readiness','url':'http://127.0.0.1:8000/api/v1/ready','expected_statuses':[503]},1)
+        self.assertEqual(result['status'],'passed');self.assertEqual(result['http_status'],503)
+    def test_oversized_http_body_cannot_leave_a_successful_header_verdict(self):
+        from validation.benchmark import request
+        response=io.BytesIO(b'x'*(2*1024**2+1));response.status=200
+        with patch('validation.benchmark.build_opener') as opener:
+            opener.return_value.open.return_value=response
+            result=request({'id':'isolated-response-limit','url':'http://127.0.0.1:8000/api/v1/health'},1)
+        self.assertEqual(result['status'],'failed')
 
 if __name__=='__main__':unittest.main()

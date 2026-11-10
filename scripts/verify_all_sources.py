@@ -5,7 +5,8 @@ caches. Those files must not be executed/deserialized or mistaken for active
 source. Scala,PowerShell and TypeScript parser checks have separate reports.
 """
 import ast
-from datetime import datetime,timezone
+import argparse
+from datetime import datetime,timezone,timedelta
 import hashlib
 import json
 import os
@@ -21,6 +22,12 @@ EXTENSIONS={'.py','.json','.yaml','.yml','.ipynb','.scala','.sbt','.ts','.tsx','
 
 
 def main():
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--output',help='Optional new report path under artifacts/source_validation.')
+    arguments=parser.parse_args()
+    output=Path(arguments.output) if arguments.output else ROOT/'artifacts/source_validation'/('all-active-'+uuid.uuid4().hex[:12]+'.json')
+    output=(ROOT/output).resolve() if not output.is_absolute() else output.resolve()
+    if not output.is_relative_to(ROOT) or not output.is_relative_to((ROOT/'artifacts/source_validation').resolve()) or output.exists():raise ValueError('Use a new workspace source-validation report path.')
     paths=[];errors=[];warnings=[];counts={'python':0,'authored_python_tests_not_executed':0,'json_or_yaml':0,'toml':0,'notebooks':0,'notebook_python_cells':0,'scala_recorded':0,'powershell_recorded':0,'typescript_recorded':0,'other_source':0};trees={}
     for parent,directories,files in os.walk(ROOT):
         directories[:]=[name for name in directories if name not in EXCLUDED]
@@ -62,7 +69,7 @@ def main():
                     target=target.split('#',1)[0].strip('<>')
                     if not target or ':' in target or target.startswith('/'):continue
                     resolved=(item.parent/unquote(target)).resolve()
-                    if not resolved.exists():warnings.append({'file':relative,'reason':'document_reference_missing_or_future','target':target})
+                    if not resolved.exists() and resolved!=output:warnings.append({'file':relative,'reason':'document_reference_missing_or_future','target':target})
         except Exception as error:errors.append({'file':relative,'error_type':type(error).__name__,'line':getattr(error,'lineno',None)})
     roots={'backend','discovery','ml','scoring','recommender','dataset_tools','validation','tests'}
     for item,tree in trees.items():
@@ -75,11 +82,11 @@ def main():
         'documentation/final/ACADEMIC_REPORT.md','documentation/final/PRESENTATION.md','documentation/final/SYLLABUS_MAPPING.md']
     for relative in required:
         if not (ROOT/relative).is_file():errors.append({'file':relative,'error_type':'required_phase12_13_file_missing'})
-    report={'schema_version':1,'scope':'all_active_source_static_only','date_asia_calcutta':'2026-11-10','checked_at_utc':datetime.now(timezone.utc).isoformat(),
+    report={'schema_version':1,'scope':'all_active_source_static_only','date_asia_calcutta':datetime.now(timezone(timedelta(hours=5,minutes=30))).date().isoformat(),'checked_at_utc':datetime.now(timezone.utc).isoformat(),
         'passed':not errors,'counts':counts,'errors':errors,'warnings':warnings,'excluded_directories':sorted(EXCLUDED),
         'files_sha256':{item.relative_to(ROOT).as_posix():hashlib.sha256(item.read_bytes()).hexdigest() for item in sorted(paths)},
         'limits':'No imports of project modules,tests,model/data deserialization,DB/Spark/services/builds/installers/resolvers. Non-JSON YAML uses the already-installed safe YAML parser without executing tags. Recorded JVM/PS/TS sources need separate parser reports. Missing/future doc references are warnings,not runtime acceptance.'}
-    output=ROOT/'artifacts/source_validation'/('all-active-'+uuid.uuid4().hex[:12]+'.json');output.parent.mkdir(parents=True,exist_ok=True)
+    output.parent.mkdir(parents=True,exist_ok=True)
     with output.open('x',encoding='utf-8') as stream:json.dump(report,stream,indent=2)
     print(json.dumps({'passed':report['passed'],'counts':counts,'errors':errors,'warnings_count':len(warnings),'report':str(output.relative_to(ROOT))}))
     return 0 if report['passed'] else 2

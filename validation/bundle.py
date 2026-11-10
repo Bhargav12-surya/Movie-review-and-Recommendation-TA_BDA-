@@ -21,11 +21,14 @@ def prepare(config_path):
         if total>maximum:raise ValueError('Approved bundle storage budget exceeded.')
         if digest(source,maximum)!=item.get('sha256'):raise ValueError('Allowlisted source hash changed.')
         validated.append((source,relative,item))
-    directory=run_directory('bundle');manifest=[]
+    directory=run_directory('bundle');manifest=[];copied=0
     for source,relative,item in validated:
         target=directory/'files'/relative;target.parent.mkdir(parents=True,exist_ok=True);checksum=hashlib.sha256()
         with source.open('rb') as incoming,target.open('xb') as outgoing:
-            for chunk in iter(lambda:incoming.read(1024*1024),b''):outgoing.write(chunk);checksum.update(chunk)
+            for chunk in iter(lambda:incoming.read(1024*1024),b''):
+                copied+=len(chunk)
+                if copied>maximum:raise ValueError('Actual bundle copy exceeds its approved byte budget; partial output has no completion manifest.')
+                outgoing.write(chunk);checksum.update(chunk)
         if checksum.hexdigest()!=item['sha256']:raise ValueError('Source changed during copy; partial directory is retained and has no completion manifest.')
         manifest.append({'path':relative.as_posix(),'sha256':item['sha256'],'bytes':target.stat().st_size,'license_reference':item['license_reference']})
     result={'kind':'reviewed_distribution_bundle','status':'prepared','files':manifest,'total_bytes':total,'config_sha256':digest(config_path),

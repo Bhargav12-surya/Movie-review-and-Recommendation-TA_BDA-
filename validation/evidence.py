@@ -13,6 +13,7 @@ def build(config_path):
             checksum=digest(study['artifact_path'])
             if checksum!=study['artifact_sha256']:raise ValueError('Artifact hash differs.')
             source=read(study['artifact_path'])
+            if digest(study['artifact_path'])!=checksum:raise ValueError('Evidence changed while reading.')
             role=study.get('evaluation_role')
             if role not in {'held_out_test','validation','calibration_diagnostic','runtime_acceptance','exploratory'}:raise ValueError('Declare the actual evaluation role.')
             if role=='held_out_test' and source.get('split')!='test':raise ValueError('Held-out claims require an actual test report; tuning/calibration cannot substitute.')

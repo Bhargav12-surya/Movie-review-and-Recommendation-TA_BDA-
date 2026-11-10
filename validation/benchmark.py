@@ -16,6 +16,15 @@ class NoRedirect(HTTPRedirectHandler):
     def redirect_request(self,*args,**kwargs):raise ValueError('Redirects are disabled for local validation.')
 
 
+def discard_body(response):
+    size=0
+    while True:
+        chunk=response.read(65536)
+        if not chunk:break
+        size+=len(chunk)
+        if size>2*1024**2:raise ValueError('Bounded response budget exceeded.')
+
+
 def local_url(value):
     parsed=urlsplit(value)
     if (parsed.scheme!='http' or parsed.hostname not in {'127.0.0.1','localhost','::1'} or parsed.username or parsed.password or parsed.query or parsed.fragment
@@ -34,9 +43,17 @@ def request(endpoint,timeout):
         with build_opener(ProxyHandler({}),NoRedirect()).open(Request(address,headers=headers,method='GET'),timeout=timeout) as response:
             code=response.status
             if code in endpoint.get('expected_statuses',[200]):outcome='passed'
-            # Do not read/store response bodies, review text, query content or tokens.
-    except HTTPError as error:code=error.code
-    except (OSError,URLError,ValueError):pass
+            # Discard bounded chunks so timing includes transfer. Never retain
+            # response text,private reviews,query content or tokens in reports.
+            discard_body(response)
+    except HTTPError as error:
+        code=error.code
+        try:
+            discard_body(error)
+            if code in endpoint.get('expected_statuses',[200]):outcome='passed'
+        except (OSError,ValueError):outcome='failed'
+        finally:error.close()
+    except (OSError,URLError,ValueError):outcome='failed'
     return {'endpoint':endpoint['id'],'status':outcome,'seconds':time.perf_counter()-started,'http_status':code}
 
 
@@ -47,7 +64,7 @@ def percentile(values,fraction):
 
 
 def measure(config_path):
-    config=read(config_path);approved(config)
+    config_hash=digest(config_path);config=read(config_path);approved(config)
     endpoints=config.get('endpoints',[]);count=config.get('requests_per_endpoint',10);concurrency=config.get('concurrency',1);timeout=config.get('timeout_seconds',5)
     if not endpoints or len(endpoints)>10 or type(count) is not int or not 1<=count<=100 or type(concurrency) is not int or not 1<=concurrency<=4 or not 0<timeout<=15:
         raise ValueError('Use1..10 endpoints,1..100 requests each,1..4 concurrent requests and a timeout at most15seconds.')
@@ -80,12 +97,14 @@ def measure(config_path):
     elapsed=time.perf_counter()-started;summaries=[]
     for identifier in identifiers:
         group=[row for row in results if row['endpoint']==identifier];successful=[row['seconds'] for row in group if row['status']=='passed' and row['phase']=='subsequent']
-        summaries.append({'id':identifier,'requests':len(group),'successful':sum(row['status']=='passed' for row in group),
+        attempted=sum(row['seconds'] is not None for row in group)
+        summaries.append({'id':identifier,'scheduled':len(group),'attempted_requests':attempted,'successful':sum(row['status']=='passed' for row in group),
             'p50_seconds_successful_subsequent':percentile(successful,.5),'p95_seconds_successful_subsequent':percentile(successful,.95),
-            'error_rate':sum(row['status']=='failed' for row in group)/len(group),'blocked_count':sum(row['status']=='blocked' for row in group)})
+            'error_rate':sum(row['status']=='failed' for row in group)/attempted if attempted else None,'blocked_count':sum(row['status']=='blocked' for row in group)})
+    if digest(config_path)!=config_hash:raise ValueError('Benchmark configuration changed during measurement.')
     directory=run_directory('benchmark')
-    report={'kind':'bounded_http_benchmark','status':'passed' if all(row['status']=='passed' for row in results) else 'incomplete' if any(row['status']=='blocked' for row in results) else 'failed',
-        'config_sha256':digest(config_path),'elapsed_seconds':elapsed,'observed_requests_per_second':len(results)/elapsed,
+    report={'kind':'bounded_http_benchmark','status':'failed' if any(row['status']=='failed' for row in results) else 'incomplete' if any(row['status']=='blocked' for row in results) else 'passed',
+        'config_sha256':config_hash,'elapsed_seconds':elapsed,'observed_requests_per_second':sum(row['seconds'] is not None for row in results)/elapsed,
         'endpoints':summaries,'timings':results,'resources':resources,'gpu_scope':'whole-device sampled memory, not model peak allocation',
         'limitations':'GET endpoints only; no training,model-cache reset,analysis queue latency or inference-quality claim. One-second samples may miss peaks. Failed requests are excluded from successful latency quantiles and reported separately.'}
     report['report_path']=str((directory/'benchmark.json').relative_to(ROOT))

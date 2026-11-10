@@ -5,7 +5,7 @@ service startup or build commands. Writes a new bounded evidence report only.
 """
 import argparse
 import ast
-from datetime import datetime,timezone
+from datetime import datetime,timezone,timedelta
 import hashlib
 import json
 import os
@@ -98,7 +98,7 @@ def verify():
     for name in required:
         if not (ROOT/name).is_file():errors.append({'error':'required_source_missing','file':name})
     fingerprints={path.relative_to(ROOT).as_posix():hashlib.sha256(path.read_bytes()).hexdigest() for path in sorted(set(paths)) if path.is_file()}
-    return {'schema_version':1,'date_asia_calcutta':'2026-11-10','checked_at_utc':datetime.now(timezone.utc).isoformat(),
+    return {'schema_version':1,'date_asia_calcutta':datetime.now(timezone(timedelta(hours=5,minutes=30))).date().isoformat(),'checked_at_utc':datetime.now(timezone.utc).isoformat(),
         'scope':'through_phase11_source_only','passed':not errors,'counts':counts,'errors':errors,'files_sha256':fingerprints,
         'not_executed':['unit_tests','database_connections_or_migrations','model_inference_or_training','Spark_jobs','build','browser','services','Phase12','Phase13'],
         'limitations':'AST/JSON/import-path/SQL-column checks are static. SQL constraints, libraries, races, actual model outputs and user journeys require execution. TypeScript and PowerShell parser reports are separate.'}

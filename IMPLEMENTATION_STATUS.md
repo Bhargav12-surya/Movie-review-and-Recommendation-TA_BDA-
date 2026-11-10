@@ -1,6 +1,6 @@
 # Live implementation status
 
-Updated: 10 November 2026, Asia/Calcutta.
+Updated: 11 November 2026, Asia/Calcutta.
 
 ## Phase status
 
@@ -18,12 +18,13 @@ Updated: 10 November 2026, Asia/Calcutta.
 | 9 — backend/database | Modular FastAPI/PostgreSQL/pgvector/auth/migration/model registry/worker/outbox source integrated; dependency installation, migration, actual inference and runtime acceptance pending |
 | 10 — frontend | Next.js/React/TypeScript frontend connected to actual API contracts; final static type check passed; build/browser execution pending |
 | 11 — discovery/voice | Grounded catalogue/evidence/recommendation routing, bounded private context and optional local CPU speech source connected; current parser is documented English rules; genuine retrieval/voice/grounding acceptance pending |
-| 12 — full validation/optimization | Deferred to the user; earlier authored test drafts are unexecuted and do not establish acceptance |
-| 13 — academic/demo preparation | Deferred to the user; any early documentation/final drafts are incomplete and superseded by the through-11 handoff |
+| 12 — full validation/optimization | Test runners,PostgreSQL/browser contracts,model reload checks,benchmark/resource tools,exports/parity/grounding/evidence/rehearsal/bundle source generated and statically checked; actual execution/optimization evidence pending |
+| 13 — academic/demo preparation | Academic report,architecture/ER,syllabus mapping,result/evidence/rights/privacy/reproducibility/checklists,demo and presentation-source materials generated; real result population and rehearsal/acceptance pending |
 
 The latest instruction is **generate files; the user will implement/run later**.
-The user expanded source generation through Phase11 and explicitly deferred
-Phases12–13. Source integration does not establish executed integration.
+The user subsequently authorized Phase12–13 source generation and requested
+all-file verification plus a complete implementation sequence in chat.
+Source integration does not establish executed integration.
 Earlier runtime/data gates remain open. Current checks are static; no new
 unit tests,inference,training or Spark jobs run.
 All software/dataset/model downloads remain manual. No package installation,
@@ -599,3 +600,73 @@ Read [the through-11 runbook](documentation/phases9-11/RUNBOOK.md) and
 operator action is earlier-phase environment/Phase2 preflight and closure of
 Phase1 mapping/annotation/permission gates,then approved Phases3–8 model runs.
 The runbook gives the subsequent manual DB/artifact/API/worker/frontend order.
+
+## Phase12–13 final source handoff — 11 November2026
+
+The latest direct request is source generation followed by verification and a
+step-by-step implementation guide. The earlier Phase12/13 deferral is superseded
+for source delivery only. No runtime/scientific acceptance is claimed.
+
+Generated source includes fixed unit/disposable-PostgreSQL/browser runners;
+actual local model load/infer/reload checks; bounded localhost HTTP/RAM/GPU
+measurement; actual prediction/Parquet exports; genuine Scala score arithmetic;
+score and stream-state parity; human-grounding/query/WER evaluation; hash-bound
+report registration and comparison; read-only rehearsal; curated permitted
+bundle preparation; disabled notebook15; and complete academic/demo source docs.
+
+Prepared correctness fixes include queue dedupe-before-capacity,two bounded
+worker child slots and child-first draining; benchmark attempted-vs-blocked
+accounting,expected failure statuses and bounded response reads; resolved output
+guards and copy-byte budgets; unchanged model/config/sample/export provenance.
+Associated tests are authored only. Existing user-edited Scala changes and
+previously reported standalone Spark evidence are preserved,not re-executed.
+
+### Current observed verification
+
+- [All active source report](artifacts/source_validation/all-active-final-20261111-d2480a93.json):
+  **245 Python files,56 JSON/YAML files,21 notebooks/65 Python code cells**;
+  **233 authored Python test functions counted,none executed**. Local import
+  targets and documentation references checked. No source errors or warnings.
+- [Scala syntax report](artifacts/source_validation/scala-parser-f07c6c7afc01468c90cd3440baf32358.json):
+  **28 Scala files**,including existing standalone harness sources,accepted by
+  the installed2.13.18 parser. No typing,code generation,Spark or SBT resolution.
+- [TypeScript report](artifacts/source_validation/all-typescript-c5145533022c.json):
+  installed TypeScript5.9.3,noEmit/incremental-false,exit0;36 source/config/lock
+  inputs fingerprinted. Node24.22.2 observed. No application build/browser.
+- [PowerShell report](artifacts/source_validation/all-powershell-f327afe836e7.json):
+  all17 operational scripts parsed with zero AST errors; no bodies executed.
+- [API/schema static report](artifacts/source_validation/phases9-11-2e9d8a7ab3.json):
+  56 backend/discovery/static-helper Python files and20 ORM/frozen-SQL table
+  column sets checked. This does not execute or type-check PostgreSQL constraints.
+- Scoped/current Git whitespace checking passes; no Git state was staged,
+  committed,restored or reset by this delivery.
+
+The initial all-source check treated a legitimate YAML file as JSON and found
+the not-yet-generated presentation source. The checker now uses installed safe
+YAML parsing when necessary,and PRESENTATION.md exists. Old failed reports are
+retained; they are not database,model or application test failures.
+
+Excluded from active-source verification: raw/processed datasets,weights,
+environments,node_modules,Git,private environment files,generated artifacts,
+caches and legacy temp copies. Those remain preserved and are not claimed
+revalidated by static parsing. No unsafe model deserialization took place.
+
+### Execution and scientific gates remain open
+
+No package/data/model download,installation,resolution,model training/inference,
+new unit/DB/browser test,DB connection/migration,Spark job,application build or
+service startup ran here. Earlier dataset/model/right/mapping/annotation and
+full batch/stream gates remain as recorded. Current tests do not establish
+training-resume equivalence,quality,calibration,offline behavior or laptop fit.
+Theme/genre reception,large-catalogue candidate policy,revocation/export
+reconciliation and unsupported coursework/query cases retain their explicit
+limitations; documentation is not a substitute implementation or measurement.
+
+Read [Phase12 execution](documentation/phase12/RUNBOOK.md),
+[the source index](documentation/phase12/GENERATED_FILES.md),
+[Phase13 materials](documentation/final/README.md) and
+[acceptance checklist](documentation/final/ACCEPTANCE_CHECKLIST.md).
+The next actual operator step is the selected-environment check,then resolution
+of missing genuine Phase1 inputs and current Phase2 build/runtime gates before
+the approved sequential models and final app acceptance. The accompanying chat
+guide gives the commands in that dependency order.
