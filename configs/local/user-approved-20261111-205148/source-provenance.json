@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "training_permitted": true,
+  "license_or_consent_reference": "User confirmed in this conversation on 2026-11-11 that they reviewed the dataset terms and academic training is permitted. Acquisition URL/date were not supplied.",
+  "source_version": "Large Movie Review Dataset v1.0",
+  "source_url": null,
+  "retrieved_at": null,
+  "permitted_use": "research",
+  "owner_reviewed_at": "2026-11-11T20:51:48.418986+05:30",
+  "reviewed_by": "project-owner (user-confirmed)",
+  "review_scope": "Binary IMDb LR and Linear SVM baselines; official test split remains reserved."
+}

@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "task": "binary_imdb",
+  "workspace": "D:\\BDA_TA",
+  "output_dir": "models/sentiment_transformer/imdb-transformer-20261111-204500-0bde8ae4",
+  "approval_path": "configs/local/recovery-20261111-204500-0bde8ae4/transformer-approval.json",
+  "language_scope": [
+    "en"
+  ],
+  "data": {
+    "format": "imdb_references",
+    "source_root": "data/raw/acl_imdb",
+    "provenance_path": "configs/local/recovery-20261111-204500-0bde8ae4/source-provenance.json",
+    "manifests": {
+      "train": "artifacts/data_quality/NEW_IMDB_SPLITS_002/train.jsonl",
+      "tuning": "data/processed/sentiment/imdb-splits-002/tuning.jsonl",
+      "calibration": "data/processed/sentiment/imdb-splits-002/calibration.jsonl",
+      "test": "artifacts/data_quality/NEW_IMDB_SPLITS_002/test.jsonl"
+    },
+    "maximum_records_per_split": 100000
+  },
+  "model": {
+    "local_path": null,
+    "permission_path": "configs/local/recovery-20261111-204500-0bde8ae4/model-permission.json"
+  },
+  "baseline_reports": [
+    "models/sentiment_tfidf/imdb-lr-20261111-204500-0bde8ae4/training_report.json",
+    "models/sentiment_tfidf/imdb-svm-20261111-204500-0bde8ae4/training_report.json"
+  ],
+  "preprocessing": {
+    "emoji_policy": "preserve",
+    "slang_mapping_path": null
+  },
+  "training": {
+    "device": "cuda",
+    "precision": "auto",
+    "epochs": 2,
+    "micro_batch_size": 4,
+    "gradient_accumulation_steps": 8,
+    "maximum_sequence_length": 128,
+    "maximum_updates": 2000,
+    "checkpoint_every_updates": 200,
+    "maximum_checkpoint_count": 8,
+    "learning_rate": 2e-05,
+    "weight_decay": 0.01,
+    "warmup_ratio": 0.1,
+    "patience": 2,
+    "seed": 42,
+    "num_workers": 0,
+    "gradient_checkpointing": false
+  },
+  "resources": {
+    "minimum_disk_free_gib": 20,
+    "minimum_available_memory_mib": 3072
+  }
+}

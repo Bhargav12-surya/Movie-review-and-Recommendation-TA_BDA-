@@ -1,0 +1,20 @@
+{
+    "schema_version":  1,
+    "task":  "binary_imdb",
+    "component":  "sentiment_transformer",
+    "run_id":  "bert-imdb-20261111-215915",
+    "approved_by":  "project-owner (user-confirmed)",
+    "approved_at":  "2026-11-11T16:31:17.9474645Z",
+    "config_sha256":  "6cbd14716afee30c07798170f99cbc64a922456ce6db7f2dfc9a108ae2d71e20",
+    "model_permission_sha256":  "a36fa6e704cbf02652e53ad7b8e9bf626d54a790b3f9e759660beec1e46927df",
+    "manifest_hashes":  {
+                            "train":  "8c0b92c4b92bbf8a2ed2d168f0710f7ac90dbefd647d02d361c6f4c5032d77bf",
+                            "tuning":  "e90a4f0e0dfe85da5d4fffcaa65cc4460dd409987adf94a11271a25b10e9d317",
+                            "calibration":  "1015005f334040c2b107a5c54f5dadadc97e9dcebc1c4c388815385fb62c00f2",
+                            "test":  "6c9e8c171d57b3061652fae2cfcf63c17ef8d57fee5f6bfdd7e289ea207e66af"
+                        },
+    "source_permission_reviewed":  true,
+    "label_policy_approved":  true,
+    "split_reviewed":  true,
+    "training_approved":  true
+}

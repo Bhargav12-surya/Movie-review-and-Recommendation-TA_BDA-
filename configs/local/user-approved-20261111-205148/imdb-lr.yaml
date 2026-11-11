@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "task": "binary_imdb",
+  "workspace": "D:\\BDA_TA",
+  "output_dir": "models/sentiment_tfidf/imdb-lr-user-approved-20261111-205148",
+  "approval_path": "configs/local/user-approved-20261111-205148/lr-approval.json",
+  "language_scope": [
+    "en"
+  ],
+  "data": {
+    "format": "imdb_references",
+    "source_root": "data/raw/acl_imdb",
+    "provenance_path": "configs/local/user-approved-20261111-205148/source-provenance.json",
+    "manifests": {
+      "train": "artifacts/data_quality/NEW_IMDB_SPLITS_002/train.jsonl",
+      "tuning": "data/processed/sentiment/imdb-splits-002/tuning.jsonl",
+      "calibration": "data/processed/sentiment/imdb-splits-002/calibration.jsonl",
+      "test": "artifacts/data_quality/NEW_IMDB_SPLITS_002/test.jsonl"
+    },
+    "maximum_records_per_split": 100000
+  },
+  "tfidf": {
+    "estimator": "logistic_regression",
+    "representation": "tfidf",
+    "max_features": 50000,
+    "ngram_range": [
+      1,
+      2
+    ],
+    "minimum_document_frequency": 2,
+    "maximum_document_frequency": 1.0,
+    "token_pattern": "(?u)\\w+(?:['’]\\w+)*|[^\\w\\s]",
+    "lowercase": true,
+    "binary_counts": false,
+    "norm": "l2",
+    "sublinear_tf": true,
+    "regularization_c": 1.0,
+    "max_iterations": 2000,
+    "class_weight": null,
+    "seed": 42,
+    "maximum_materialized_text_bytes": 268435456
+  },
+  "resources": {
+    "minimum_disk_free_gib": 20,
+    "minimum_available_memory_mib": 3072
+  }
+}

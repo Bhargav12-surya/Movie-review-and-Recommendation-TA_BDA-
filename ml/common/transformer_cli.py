@@ -19,7 +19,12 @@ def train_main(component: str, default_config: Path) -> int:
         print(json.dumps(report, indent=2, allow_nan=False))
         return 0 if args.execute or report["ready"] else 2
     except (OSError, ValueError, RuntimeError, ImportError) as error:
+        import traceback
         print(json.dumps({"status": "blocked_or_failed", "error_type": type(error).__name__,
+                          "resource_check": getattr(error, "resource_check", None),
+                          "failure_location": [{"file": Path(frame.filename).name,
+                              "function": frame.name, "line": frame.lineno}
+                              for frame in traceback.extract_tb(error.__traceback__)],
                           "detail": "Inspect local prerequisites/configuration and retained run reports; no automatic retry/download."}))
         return 2
 

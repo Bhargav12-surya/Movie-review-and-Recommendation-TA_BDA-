@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "task": null,
+  "component": null,
+  "run_id": null,
+  "approved_by": null,
+  "approved_at": null,
+  "config_sha256": null,
+  "model_permission_sha256": null,
+  "manifest_hashes": {},
+  "source_permission_reviewed": false,
+  "label_policy_approved": false,
+  "split_reviewed": false,
+  "training_approved": false
+}

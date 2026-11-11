@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "task": "binary_imdb",
+  "component": "sentiment_transformer",
+  "run_id": "imdb-transformer-20261111-204500-0bde8ae4",
+  "approved_by": null,
+  "approved_at": null,
+  "config_sha256": "0abbaf576bddf156f8cd6fa6f8029e94badd18e33835b80c430a59cb480b2440",
+  "model_permission_sha256": null,
+  "manifest_hashes": {
+    "train": "8c0b92c4b92bbf8a2ed2d168f0710f7ac90dbefd647d02d361c6f4c5032d77bf",
+    "tuning": "e90a4f0e0dfe85da5d4fffcaa65cc4460dd409987adf94a11271a25b10e9d317",
+    "calibration": "1015005f334040c2b107a5c54f5dadadc97e9dcebc1c4c388815385fb62c00f2",
+    "test": "6c9e8c171d57b3061652fae2cfcf63c17ef8d57fee5f6bfdd7e289ea207e66af"
+  },
+  "source_permission_reviewed": false,
+  "label_policy_approved": false,
+  "split_reviewed": false,
+  "training_approved": false
+}

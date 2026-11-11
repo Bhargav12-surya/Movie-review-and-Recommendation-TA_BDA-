@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "task": "binary_imdb",
+  "component": "tfidf",
+  "run_id": "imdb-lr-user-approved-20261111-205148",
+  "approved_by": "project-owner (user-confirmed)",
+  "approved_at": "2026-11-11T20:51:48.418986+05:30",
+  "config_sha256": "1b0dc09ad1ffdbbf556f43b32104e3ce0702be64baf95640656d1867b570694a",
+  "model_permission_sha256": null,
+  "manifest_hashes": {
+    "train": "8c0b92c4b92bbf8a2ed2d168f0710f7ac90dbefd647d02d361c6f4c5032d77bf",
+    "tuning": "e90a4f0e0dfe85da5d4fffcaa65cc4460dd409987adf94a11271a25b10e9d317",
+    "calibration": "1015005f334040c2b107a5c54f5dadadc97e9dcebc1c4c388815385fb62c00f2",
+    "test": "6c9e8c171d57b3061652fae2cfcf63c17ef8d57fee5f6bfdd7e289ea207e66af"
+  },
+  "source_permission_reviewed": true,
+  "label_policy_approved": true,
+  "split_reviewed": true,
+  "training_approved": true,
+  "basis": "User requested baseline training and confirmed source terms permit academic training; binary task and split counts were shown in preparation output."
+}

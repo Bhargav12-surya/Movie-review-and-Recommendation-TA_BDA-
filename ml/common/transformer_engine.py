@@ -284,7 +284,13 @@ def train(config: dict, component: str, resume_checkpoint: str | None = None) ->
             if progress["patience_used"] >= settings["patience"] or progress["updates"] >= total_updates:
                 break
     except Exception as error:
+        import traceback
         write_json(run / ("failure-%d.json" % time.time_ns()), {"error_type": type(error).__name__,
+                   "resource_check": getattr(error, "resource_check", None),
+                   "failure_location": [{"file": Path(frame.filename).name,
+                       "function": frame.name, "line": frame.lineno}
+                       for frame in traceback.extract_tb(error.__traceback__)],
+                   "resources_at_failure": resources(config["_workspace"]),
                    "progress": {key: value for key, value in progress.items() if key != "history"},
                    "note": "No automatic OOM retry or CPU fallback; resume a reviewed owned checkpoint."})
         raise

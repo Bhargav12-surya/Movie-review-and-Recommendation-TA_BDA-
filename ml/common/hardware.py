@@ -20,15 +20,31 @@ def resources(workspace: str | Path) -> dict:
     return result
 
 
-def guard_resources(config: dict, checkpoint_bytes: int = 0) -> dict:
+class ResourceLimitError(RuntimeError):
+    """Measured resource failure with safe numeric details for CLI/run reports."""
+    def __init__(self, resource: str, available: int, required: int, checkpoint_bytes: int):
+        self.resource_check = {"resource": resource, "available_bytes": available,
+            "required_bytes": required, "checkpoint_reserve_bytes": checkpoint_bytes}
+        super().__init__(f"Insufficient {resource}: {available} bytes available; {required} required.")
+
+
+def guard_resources(config: dict, checkpoint_bytes: int = 0, *, operation: str = "startup") -> dict:
     result = resources(config["_workspace"])
     settings = config.get("resources", {})
     disk = int(settings.get("minimum_disk_free_gib", 20)) * 1024**3 + checkpoint_bytes
-    memory = int(settings.get("minimum_available_memory_mib", 3072)) * 1024**2
+    if operation not in {"startup", "checkpoint"}:
+        raise ValueError("Resource check operation must be startup or checkpoint.")
+    startup_minimum = settings.get("minimum_available_memory_mib", 3072)
+    minimum = (settings.get("checkpoint_minimum_available_memory_mib", startup_minimum)
+               if operation == "checkpoint" else startup_minimum)
+    if type(minimum) is not int or minimum < 1024:
+        raise ValueError("Available-RAM floors must be explicit integers of at least 1024 MiB.")
+    # Existing configs retain their original floor unless a checkpoint floor is explicit.
+    memory = minimum * 1024**2
     if result["free_disk_bytes"] < disk:
-        raise RuntimeError("Insufficient SSD reserve for this run/checkpoint.")
+        raise ResourceLimitError("disk", result["free_disk_bytes"], disk, checkpoint_bytes)
     if result["available_memory_bytes"] is not None and result["available_memory_bytes"] < memory:
-        raise RuntimeError("Insufficient currently available RAM; close workloads before training.")
+        raise ResourceLimitError("RAM", result["available_memory_bytes"], memory, checkpoint_bytes)
     return result
 
 

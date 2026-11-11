@@ -46,7 +46,7 @@ def save_checkpoint(path: Path, model, optimizer, scheduler, scaler, progress: d
     if path.parent.exists() and len(list(path.parent.glob("checkpoint-*"))) >= maximum:
         raise RuntimeError("Checkpoint-count budget reached; review run/retention before continuing.")
     estimated = sum(value.numel() * value.element_size() for value in model.parameters()) * 4
-    guard_resources(config, estimated)
+    guard_resources(config, estimated, operation="checkpoint")
     path.mkdir(parents=True, exist_ok=False)
     state = {"model": model.state_dict(), "optimizer": optimizer.state_dict(),
              "scheduler": scheduler.state_dict(), "scaler": scaler.state_dict(),
