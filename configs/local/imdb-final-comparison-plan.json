@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "task": "binary_imdb",
+  "purpose": "Frozen English binary IMDb academic comparison",
+  "primary_selection_metric": "macro_f1",
+  "selection_rule_reference": "documentation/phase3/RUNBOOK.md",
+  "expected_primary_model": "lr",
+  "prepared_at": "2026-11-11T18:41:31.970165+00:00",
+  "candidates": [
+    {
+      "key": "lr",
+      "name": "Logistic Regression",
+      "component": "sentiment_tfidf",
+      "config": "configs/local/user-approved-20261111-205148/imdb-lr.yaml",
+      "run": "models/sentiment_tfidf/imdb-lr-user-approved-20261111-205148",
+      "tuning_report": "models/sentiment_tfidf/imdb-lr-user-approved-20261111-205148/evaluations/tuning-f408a8544dd94c8a8bfd481289305905.json",
+      "config_sha256": "1b0dc09ad1ffdbbf556f43b32104e3ce0702be64baf95640656d1867b570694a",
+      "tuning_report_sha256": "86827913951d338bb032de337ec2bf96bb485c71c1298c2e907b0c3ed2578939",
+      "artifact_sha256": "cea427880fdb072c2f3118fb002c8d798204ba819a6b95dd379d12f744d89cb9"
+    },
+    {
+      "key": "svm",
+      "name": "Linear SVM",
+      "component": "sentiment_tfidf",
+      "config": "configs/local/retry-20261111-205938/imdb-svm.yaml",
+      "run": "models/sentiment_tfidf/svm-retry-20261111-205938",
+      "tuning_report": "models/sentiment_tfidf/svm-retry-20261111-205938/evaluations/tuning-3d91b32fe3a540b6a46d618f7a0a3689.json",
+      "config_sha256": "769bd9512f5cb32cd723a23053d696da72a90d36c113caac3f027f1748ad0682",
+      "tuning_report_sha256": "cb2e15fe27ef5fa58d8107d2d7b8de1b1ac86e70526e4a1a8ee721dfd87ec04b",
+      "artifact_sha256": "ccacbb990bada12636f647a7d3d7697a069ffd987bf4424520db9ed38b26cb14"
+    },
+    {
+      "key": "bert",
+      "name": "BERT base uncased",
+      "component": "sentiment_transformer",
+      "config": "configs/local/bert-imdb-ckpt-20261111-224841/imdb-transformer.yaml",
+      "run": "models/sentiment_transformer/bert-imdb-ckpt-20261111-224841",
+      "tuning_report": "models/sentiment_transformer/bert-imdb-ckpt-20261111-224841/evaluation-tuning-1794418425712881800.json",
+      "config_sha256": "ef9d8bdd56d3befc01a7d36df615ef38d07c6aee9304978772ba5ca0b46c605f",
+      "tuning_report_sha256": "54b720d6a67775e56c7715317f48d7219463d15e2478373c1e82e32c08ff6501",
+      "artifact_sha256": "dfa91e7c44c11a2e8e2302f9c5d6d0c02c18c66a676d037673661fb85c91bd4d"
+    }
+  ]
+}
