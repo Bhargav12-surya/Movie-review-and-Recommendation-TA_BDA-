@@ -12,7 +12,9 @@ def public_movie(row):
     return {'id':str(row.id),'title':row.title,'overview':row.overview,'release_date':row.release_date,
         'runtime_minutes':row.runtime_minutes,'original_language':row.original_language,
         'genres':row.genres,'keywords':row.keywords,'themes':(row.features or {}).get('themes',[]),
-        'poster_url':f'/api/v1/movies/{row.id}/poster' if row.poster_path else None,'metadata_source':row.metadata_source}
+        'poster_url':f'/api/v1/movies/{row.id}/poster' if row.poster_path else None,
+        'backdrop_url':f'/api/v1/movies/{row.id}/backdrop' if row.backdrop_path else None,
+        'metadata_source':row.metadata_source}
 
 def current_scores(session,movie):
     rows=session.scalars(select(MovieScore).where(MovieScore.movie_id==movie.id,MovieScore.evidence_version==movie.evidence_version,

@@ -44,10 +44,10 @@ test('a failed catalogue request shows retry and recovers from the actual backen
   // Deliberate transport failure only: no API JSON or model predictions are mocked.
   await page.route('**/api/v1/movies?*',route=>route.abort('failed'));
   await page.goto('/discover');
-  await expect(page.getByRole('alert')).toBeVisible();
+  await expect(page.getByRole('main').getByRole('alert')).toBeVisible();
   await page.unroute('**/api/v1/movies?*');
   await page.getByRole('button',{name:'Try again',exact:true}).click();
-  await expect(page.getByRole('alert')).toHaveCount(0);
+  await expect(page.getByRole('main').getByRole('alert')).toHaveCount(0);
   await expect(page.getByRole('heading',{name:/From the catalogue|No films in this frame/})).toBeVisible();
 });
 
@@ -92,7 +92,7 @@ test('owned preferences/watchlist, real grounded context, microphone denial and 
     }else await expect(page.locator('.recommendation-grid, .state.error, .state.empty').first()).toBeVisible();
     await page.getByRole('link',{name:'Film companion',exact:true}).click();
     await page.getByRole('button',{name:/Voice$/}).click();
-    await expect(page.getByRole('alert')).toBeVisible();
+    await expect(page.getByRole('main').getByRole('alert')).toBeVisible();
     await expect(page.getByRole('textbox',{name:'Movie discovery query',exact:true})).toBeEnabled();
     const matches=await sendChat(page,request,token,'Recommend drama movies under 180 minutes');
     for(const candidate of matches.movies??[]){expect(candidate.genres).toContain('Drama');expect(candidate.runtime_minutes).toBeLessThanOrEqual(180);}
@@ -126,4 +126,66 @@ test('browser core catalogue requests stay on localhost during an offline rehear
   await expect(page.getByRole('heading',{name:movie.title,exact:true})).toBeVisible();
   expect(externalAttempts.length,'Core browser catalogue must not require remote resources').toBe(0);
   // This audits browser requests only; backend/worker OS-network isolation is a separate rehearsal.
+});
+
+
+// LOCAL_JOURNEY_RUNTIME_DIAGNOSTICS
+import {mkdirSync as diagnosticMkdir, writeFileSync as diagnosticWrite} from 'node:fs';
+
+const journeyDiagnostics = new WeakMap<Page, {
+  codes: string[];
+  http: Array<{path: string; status: number}>;
+}>();
+
+test.beforeEach(async ({page}) => {
+  const notes = {codes: [] as string[], http: [] as Array<{path: string; status: number}>};
+  journeyDiagnostics.set(page, notes);
+
+  const record = (kind: string, message: string) => {
+    const code =
+      message.match(/Minified React error #\d+/)?.[0] ??
+      message.match(/Cannot read properties of (?:undefined|null) \(reading ['"][A-Za-z_$][A-Za-z0-9_$]*['"]\)/)?.[0] ??
+      (message.includes('Maximum update depth exceeded')
+        ? 'Maximum update depth exceeded' : 'unclassified');
+    const entry = kind + ': ' + code;
+    if (!notes.codes.includes(entry) && notes.codes.length < 10)
+      notes.codes.push(entry);
+  };
+
+  page.on('pageerror', error => record('pageerror', error.message));
+  page.on('console', message => {
+    if (message.type() === 'error') record('console', message.text());
+  });
+  page.on('response', response => {
+    const url = new URL(response.url());
+    if (response.status() >= 400 && notes.http.length < 20 &&
+        ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)) {
+      notes.http.push({
+        path: url.pathname.replace(/[0-9a-f]{8}-[0-9a-f-]{27}/gi, '[id]'),
+        status: response.status()
+      });
+    }
+  });
+});
+
+test.afterEach(async ({page}, info) => {
+  const notes = journeyDiagnostics.get(page);
+  const boundary = await page.getByText(
+    'The local service could not complete this request.',
+    {exact: true}
+  ).isVisible().catch(() => false);
+
+  const locations = info.errors.map(error =>
+    String(error.stack ?? '').match(/journeys\.spec\.ts:\d+:\d+/)?.[0]
+  ).filter(Boolean);
+
+  diagnosticMkdir(info.outputDir, {recursive: true});
+  diagnosticWrite(info.outputPath('runtime-diagnostics.json'), JSON.stringify({
+    project: info.project.name,
+    status: info.status,
+    route: new URL(page.url()).pathname,
+    error_boundary_visible: boundary,
+    failure_locations: locations,
+    runtime: notes
+  }, null, 2), {encoding: 'utf8', flag: 'wx'});
 });

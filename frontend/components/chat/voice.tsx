@@ -1,7 +1,101 @@
 "use client";
-import {useEffect,useRef,useState} from 'react';import {api} from '@/lib/api';import {useAuth} from '@/lib/auth';
-export function VoiceInput({onText}:{onText:(text:string)=>void}){const auth=useAuth();const [recording,setRecording]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('');const recorder=useRef<MediaRecorder|null>(null),stream=useRef<MediaStream|null>(null),timer=useRef<ReturnType<typeof setTimeout>|null>(null),cancelled=useRef(false);
- useEffect(()=>{cancelled.current=false;return()=>{cancelled.current=true;if(timer.current)clearTimeout(timer.current);if(recorder.current?.state==='recording')recorder.current.stop();stream.current?.getTracks().forEach(track=>track.stop());};},[]);
- async function toggle(){if(recording){recorder.current?.stop();return;}setError('');try{if(!navigator.mediaDevices?.getUserMedia||typeof MediaRecorder==='undefined')throw new Error('Recording is unavailable in this browser. Text input remains available.');stream.current=await navigator.mediaDevices.getUserMedia({audio:true});const type=MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':'audio/mp4';const current=new MediaRecorder(stream.current,{mimeType:type});recorder.current=current;const chunks:BlobPart[]=[];current.ondataavailable=event=>{if(event.data.size)chunks.push(event.data);};current.onstop=async()=>{if(cancelled.current)return;setRecording(false);stream.current?.getTracks().forEach(track=>track.stop());if(timer.current)clearTimeout(timer.current);setBusy(true);try{const form=new FormData();form.append('file',new Blob(chunks,{type}),type==='audio/webm'?'utterance.webm':'utterance.mp4');const result=await api<{text:string}>('/chat/transcribe',{method:'POST',body:form},auth.token);onText(result.text);}catch(error){setError((error as Error).message);}finally{setBusy(false);}};current.start();setRecording(true);timer.current=setTimeout(()=>current.state==='recording'&&current.stop(),30000);}catch(error){setError((error as Error).message);stream.current?.getTracks().forEach(track=>track.stop());}}
- return <div><button type="button" className="button secondary" aria-pressed={recording} disabled={busy} onClick={toggle}>{busy?'Transcribing…':recording?'■ Stop recording':'◉ Voice'}</button>{error&&<p role="alert" className="notice error">{error}</p>}</div>;
+import {useEffect, useRef, useState} from "react";
+import {api} from "@/lib/api";
+import {useAuth} from "@/lib/auth";
+import {MicIcon} from "@/components/ui/icons";
+
+export function VoiceInput({onText}: {onText: (text: string) => void}) {
+  const auth = useAuth();
+  const [recording, setRecording] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const recorder = useRef<MediaRecorder | null>(null);
+  const stream = useRef<MediaStream | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cancelled = useRef(false);
+
+  useEffect(() => {
+    cancelled.current = false;
+    return () => {
+      cancelled.current = true;
+      if (timer.current) clearTimeout(timer.current);
+      if (recorder.current?.state === "recording") recorder.current.stop();
+      stream.current?.getTracks().forEach((track) => track.stop());
+    };
+  }, []);
+
+  async function toggle() {
+    if (recording) {
+      recorder.current?.stop();
+      return;
+    }
+    setError("");
+    try {
+      if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+        throw new Error("Recording is unavailable in this browser. Text input remains available.");
+      }
+      stream.current = await navigator.mediaDevices.getUserMedia({audio: true});
+      const type = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "audio/mp4";
+      const current = new MediaRecorder(stream.current, {mimeType: type});
+      recorder.current = current;
+      const chunks: BlobPart[] = [];
+      current.ondataavailable = (event) => {
+        if (event.data.size) chunks.push(event.data);
+      };
+      current.onstop = async () => {
+        if (cancelled.current) return;
+        setRecording(false);
+        stream.current?.getTracks().forEach((track) => track.stop());
+        if (timer.current) clearTimeout(timer.current);
+        setBusy(true);
+        try {
+          const form = new FormData();
+          form.append(
+            "file",
+            new Blob(chunks, {type}),
+            type === "audio/webm" ? "utterance.webm" : "utterance.mp4",
+          );
+          const result = await api<{text: string}>(
+            "/chat/transcribe",
+            {method: "POST", body: form},
+            auth.token,
+          );
+          onText(result.text);
+        } catch (err) {
+          setError((err as Error).message);
+        } finally {
+          setBusy(false);
+        }
+      };
+      current.start();
+      setRecording(true);
+      timer.current = setTimeout(() => {
+        if (current.state === "recording") current.stop();
+      }, 30000);
+    } catch (err) {
+      setError((err as Error).message);
+      stream.current?.getTracks().forEach((track) => track.stop());
+    }
+  }
+
+  return (
+    <div style={{display: "flex", flexDirection: "column", gap: 6}}>
+      <button
+        type="button"
+        className="secondary"
+        aria-pressed={recording}
+        disabled={busy}
+        onClick={toggle}
+        style={recording ? {background: "#743333", borderColor: "#9c4848", color: "#fff"} : undefined}
+      >
+        <MicIcon size={15} />
+        {busy ? "Transcribing…" : recording ? "Stop recording" : "Voice"}
+      </button>
+      {error && (
+        <p role="alert" className="notice error" style={{margin: 0}}>
+          {error}
+        </p>
+      )}
+    </div>
+  );
 }

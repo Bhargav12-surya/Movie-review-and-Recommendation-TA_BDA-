@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "study_id": "movielens-2022-available-channels-v1",
+  "k": 10,
+  "channels": [
+    "als",
+    "genre",
+    "popularity"
+  ],
+  "unavailable_channels": [
+    "semantic",
+    "theme"
+  ],
+  "selection_metric": "ndcg@k",
+  "selection_tie_break": [
+    "precision@k",
+    "recall@k",
+    "fewer_active_channels",
+    "declared_trial_order"
+  ],
+  "rating_utility_center": 2.75,
+  "rating_utility_scale": 2.25,
+  "diversity_penalty": 0.0,
+  "rerank_pool_size": 200,
+  "trials": [
+    {
+      "id": "als0_genre0_pop4",
+      "weights": {
+        "als": 0.0,
+        "genre": 0.0,
+        "popularity": 1.0
+      }
+    },
+    {
+      "id": "als0_genre1_pop3",
+      "weights": {
+        "als": 0.0,
+        "genre": 0.25,
+        "popularity": 0.75
+      }
+    },
+    {
+      "id": "als0_genre2_pop2",
+      "weights": {
+        "als": 0.0,
+        "genre": 0.5,
+        "popularity": 0.5
+      }
+    },
+    {
+      "id": "als0_genre3_pop1",
+      "weights": {
+        "als": 0.0,
+        "genre": 0.75,
+        "popularity": 0.25
+      }
+    },
+    {
+      "id": "als0_genre4_pop0",
+      "weights": {
+        "als": 0.0,
+        "genre": 1.0,
+        "popularity": 0.0
+      }
+    },
+    {
+      "id": "als1_genre0_pop3",
+      "weights": {
+        "als": 0.25,
+        "genre": 0.0,
+        "popularity": 0.75
+      }
+    },
+    {
+      "id": "als1_genre1_pop2",
+      "weights": {
+        "als": 0.25,
+        "genre": 0.25,
+        "popularity": 0.5
+      }
+    },
+    {
+      "id": "als1_genre2_pop1",
+      "weights": {
+        "als": 0.25,
+        "genre": 0.5,
+        "popularity": 0.25
+      }
+    },
+    {
+      "id": "als1_genre3_pop0",
+      "weights": {
+        "als": 0.25,
+        "genre": 0.75,
+        "popularity": 0.0
+      }
+    },
+    {
+      "id": "als2_genre0_pop2",
+      "weights": {
+        "als": 0.5,
+        "genre": 0.0,
+        "popularity": 0.5
+      }
+    },
+    {
+      "id": "als2_genre1_pop1",
+      "weights": {
+        "als": 0.5,
+        "genre": 0.25,
+        "popularity": 0.25
+      }
+    },
+    {
+      "id": "als2_genre2_pop0",
+      "weights": {
+        "als": 0.5,
+        "genre": 0.5,
+        "popularity": 0.0
+      }
+    },
+    {
+      "id": "als3_genre0_pop1",
+      "weights": {
+        "als": 0.75,
+        "genre": 0.0,
+        "popularity": 0.25
+      }
+    },
+    {
+      "id": "als3_genre1_pop0",
+      "weights": {
+        "als": 0.75,
+        "genre": 0.25,
+        "popularity": 0.0
+      }
+    },
+    {
+      "id": "als4_genre0_pop0",
+      "weights": {
+        "als": 1.0,
+        "genre": 0.0,
+        "popularity": 0.0
+      }
+    }
+  ],
+  "metadata_scope": "Current approved MovieLens genre snapshot; retrospective validation.",
+  "research_only": true,
+  "serving_approved": false,
+  "scope": "Fixed saved validation users/candidates; no retraining or final-test evaluation."
+}

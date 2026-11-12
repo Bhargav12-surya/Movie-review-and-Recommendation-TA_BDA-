@@ -1,0 +1,10 @@
+{
+  "training_approved": false,
+  "source_permission_reviewed": false,
+  "split_reviewed": false,
+  "approved_by": null,
+  "run_id": "als-validation-c8378830710a4feeb97d5671a9542ba1",
+  "config_sha256": "2b0f3cc50c40be753c4d4422f29d2c6dbf5a1e3820a78cbad0d866e8d5027c2a",
+  "model_frozen": false,
+  "final_test_approved": false
+}

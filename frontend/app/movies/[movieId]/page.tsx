@@ -1,8 +1,150 @@
 "use client";
-import {useEffect,useState,useCallback} from 'react';import {useParams} from 'next/navigation';import {api} from '@/lib/api';import {useAuth} from '@/lib/auth';import type {MovieDetail,Review} from '@/lib/types';import {Poster,MovieGrid} from '@/components/movie/card';import {AudienceScore,ScoreProfile} from '@/components/score/profile';import {ReviewSummary} from '@/components/review/summary';import {ReviewList} from '@/components/review/list';import {ReviewComposer} from '@/components/review/composer';import {RatingControl} from '@/components/movie/rating';import {Loading,ErrorState,Empty} from '@/components/ui/states';
-export default function MoviePage(){const {movieId}=useParams<{movieId:string}>();const auth=useAuth();const [movie,setMovie]=useState<MovieDetail|null>(null),[reviews,setReviews]=useState<Review[]>([]),[similar,setSimilar]=useState<MovieDetail[]>([]),[error,setError]=useState(''),[notice,setNotice]=useState(''),[reviewsError,setReviewsError]=useState(''),[refresh,setRefresh]=useState(0);const reload=useCallback(()=>setRefresh(value=>value+1),[]);
- useEffect(()=>{const controller=new AbortController();setError('');setReviewsError('');api<MovieDetail>(`/movies/${movieId}`,{signal:controller.signal}).then(setMovie).catch(error=>{if(!controller.signal.aborted)setError(error.message);});api<{reviews:Review[]}>(`/movies/${movieId}/reviews`,{signal:controller.signal}).then(value=>setReviews(value.reviews)).catch(error=>{if(!controller.signal.aborted)setReviewsError(error.message);});api<{movies:MovieDetail[]}>(`/movies/${movieId}/similar`,{signal:controller.signal}).then(value=>setSimilar(value.movies)).catch(()=>{});return()=>controller.abort();},[movieId,refresh]);
- async function save(){if(!auth.token){setNotice('Sign in to save films to your watchlist.');return;}try{await api(`/me/watchlist/${movieId}`,{method:'PUT'},auth.token);setNotice('Added to your watchlist.');}catch(error){setNotice((error as Error).message);}}
- if(error)return <ErrorState message={error} retry={reload}/>;if(!movie)return <Loading/>;
- return <><section className="detail-hero"><Poster movie={movie} large/><div className="detail-info"><span className="eyebrow">A film in focus</span><h1>{movie.title}</h1><div className="detail-meta"><span>{movie.release_date??'Release date unavailable'}</span><span>{movie.runtime_minutes?`${movie.runtime_minutes} min`:'Runtime unavailable'}</span><span>{movie.genres.join(' / ')}</span></div><p>{movie.overview||'A licensed synopsis has not been cached for this film.'}</p><AudienceScore score={movie.scores.overall}/>{movie.audience_star_rating?.count? <small>Member star rating: {movie.audience_star_rating.mean?.toFixed(1)}/5 · {movie.audience_star_rating.count} ratings</small>:null}<div className="actions"><button className="button" onClick={save}>＋ Add to watchlist</button><a className="button secondary" href="#review-composer">Write a review</a></div>{notice&&<p role="status" className="notice">{notice}</p>}</div></section><div className="detail-columns"><div><ReviewSummary summary={movie.summary}/>{reviewsError?<ErrorState message={reviewsError} retry={reload}/>:<ReviewList reviews={reviews}/>}<div id="review-composer" style={{marginTop:30}}><ReviewComposer movieId={movieId} onComplete={reload}/></div></div><aside><ScoreProfile scores={movie.scores}/><section className="panel"><h2>Catalogue themes</h2><p>{movie.themes?.length?movie.themes.map(theme=>theme.replaceAll('_',' ')).join(', '):'Curated theme relevance is unavailable.'}</p><small>These describe film content. Theme-specific audience reception requires separate target evidence.</small></section><RatingControl movieId={movieId} onSaved={reload}/><section className="panel"><span className="eyebrow">Keep the distinctions</span><p className="muted">Audience sentiment describes review evidence. Star ratings, theme relevance and your personal match are separate signals.</p><small>Metadata: {movie.metadata_source??'local licensed catalogue'}</small></section></aside></div>{similar.length>0&&<section className="section"><div className="section-heading"><h2>In a similar orbit</h2><span className="eyebrow">Actual semantic neighbours</span></div><MovieGrid movies={similar}/></section>}</>;
+import {useEffect, useState, useCallback} from "react";
+import {useParams} from "next/navigation";
+import {api} from "@/lib/api";
+import {useAuth} from "@/lib/auth";
+import type {MovieDetail, Review} from "@/lib/types";
+import {Poster, MovieGrid} from "@/components/movie/card";
+import {AudienceScore, ScoreProfile} from "@/components/score/profile";
+import {ReviewSummary} from "@/components/review/summary";
+import {ReviewList} from "@/components/review/list";
+import {ReviewComposer} from "@/components/review/composer";
+import {RatingControl} from "@/components/movie/rating";
+import {Loading, ErrorState} from "@/components/ui/states";
+import {PlusIcon, ReviewIcon} from "@/components/ui/icons";
+
+export default function MoviePage() {
+  const {movieId} = useParams<{movieId: string}>();
+  const auth = useAuth();
+  const [movie, setMovie] = useState<MovieDetail | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [similar, setSimilar] = useState<MovieDetail[]>([]);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [reviewsError, setReviewsError] = useState("");
+  const [refresh, setRefresh] = useState(0);
+  const reload = useCallback(() => setRefresh((value) => value + 1), []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setError("");
+    setReviewsError("");
+    api<MovieDetail>(`/movies/${movieId}`, {signal: controller.signal})
+      .then(setMovie)
+      .catch((err) => {
+        if (!controller.signal.aborted) setError(err.message);
+      });
+    api<{reviews: Review[]}>(`/movies/${movieId}/reviews`, {signal: controller.signal})
+      .then((value) => setReviews(value.reviews))
+      .catch((err) => {
+        if (!controller.signal.aborted) setReviewsError(err.message);
+      });
+    api<{movies: MovieDetail[]}>(`/movies/${movieId}/similar`, {signal: controller.signal})
+      .then((value) => setSimilar(value.movies))
+      .catch(() => {});
+    return () => controller.abort();
+  }, [movieId, refresh]);
+
+  async function save() {
+    if (!auth.token) {
+      setNotice("Sign in to save films to your watchlist.");
+      return;
+    }
+    try {
+      await api(`/me/watchlist/${movieId}`, {method: "PUT"}, auth.token);
+      setNotice("Added to your watchlist.");
+    } catch (err) {
+      setNotice((err as Error).message);
+    }
+  }
+
+  if (error) return <ErrorState message={error} retry={reload} />;
+  if (!movie) return <Loading />;
+
+  return (
+    <>
+      <section className="detail-hero">
+        <Poster movie={movie} large />
+        <div className="detail-info">
+          <span className="eyebrow">IN FOCUS</span>
+          <h1>{movie.title}</h1>
+          <div className="detail-meta">
+            <span>{movie.release_date?.slice(0, 4) ?? "—"}</span>
+            <span>·</span>
+            <span>{movie.runtime_minutes ? `${movie.runtime_minutes} min` : "—"}</span>
+            <span>·</span>
+            <span>{movie.genres.join(" / ") || "—"}</span>
+          </div>
+
+          {movie.genres.length > 0 && (
+            <div className="tags">
+              {movie.genres.map((genre) => (
+                <span className="tag" key={genre}>
+                  {genre}
+                </span>
+              ))}
+              {movie.themes?.map((theme) => (
+                <span className="tag theme" key={theme}>
+                  {theme.replaceAll("_", " ")}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {movie.overview && <p>{movie.overview}</p>}
+
+          <AudienceScore score={movie.scores.overall} />
+
+          {movie.audience_star_rating?.count ? (
+            <small style={{display: "block"}}>
+              Member rating: {movie.audience_star_rating.mean?.toFixed(1)}/5 ·{" "}
+              {movie.audience_star_rating.count} ratings
+            </small>
+          ) : null}
+
+          <div className="actions">
+            <button type="button" className="primary" onClick={save}>
+              <PlusIcon size={15} /> Add to watchlist
+            </button>
+            <a className="secondary" href="#review-composer">
+              <ReviewIcon size={15} /> Write a review
+            </a>
+          </div>
+          {notice && (
+            <p role="status" className="notice">
+              {notice}
+            </p>
+          )}
+        </div>
+      </section>
+
+      <div className="detail-columns">
+        <div>
+          <ReviewSummary summary={movie.summary} />
+          {reviewsError ? (
+            <ErrorState message={reviewsError} retry={reload} />
+          ) : (
+            <ReviewList reviews={reviews} />
+          )}
+          <div id="review-composer" style={{marginTop: 22}}>
+            <ReviewComposer movieId={movieId} onComplete={reload} />
+          </div>
+        </div>
+
+        <aside>
+          <RatingControl movieId={movieId} onSaved={reload} />
+          <ScoreProfile scores={movie.scores} />
+        </aside>
+      </div>
+
+      {similar.length > 0 && (
+        <section className="section">
+          <div className="section-heading">
+            <h2>Similar films</h2>
+          </div>
+          <MovieGrid movies={similar} />
+        </section>
+      )}
+    </>
+  );
 }

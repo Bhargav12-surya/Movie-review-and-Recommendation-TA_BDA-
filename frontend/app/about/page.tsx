@@ -1,1 +1,29 @@
-export default function About(){return <article className="prose"><header className="page-header"><span className="eyebrow">A little transparency</span><h1>Opinions need<br/>context. So do scores.</h1></header><h2>Audience sentiment</h2><p>The audience index uses approved calibrated positive,neutral and negative probabilities from eligible movie-linked reviews. It applies a reviewed minimum-evidence policy before publishing a score. When evidence is insufficient,you will see “Not enough audience reviews yet.” Star ratings remain separate.</p><h2>Aspects and themes</h2><p>Acting,music and pacing have their own evidence and target-specific sentiment. Theme relevance describes what a film concerns; it does not describe how audiences received that theme. Missing target evidence stays unavailable.</p><h2>Personal discovery</h2><p>Recommendations combine available collaborative factors,semantic content and your permitted preferences/history. The personalized match percentage is a ranking score,not a probability that you will enjoy a film. Explanations show contributing inputs.</p><h2>Grounded summaries and conversation</h2><p>Review excerpts retain their evidence references. Novel generated summaries require factuality review before publication. The companion retrieves real catalogue facts and review snapshots,asks for clarification when titles are ambiguous,and does not invent audience consensus.</p><h2>Your choices</h2><p>Publishing a review,using it for audience evidence,and using it for research training are separate choices. Your own reviews can be edited or deleted. Personalization can be disabled in your profile. Text input is always available; microphone permission is requested only when you press Voice.</p><h2>Academic research edition</h2><p>This local project demonstrates Scala/Apache Spark Big Data processing and trained NLP workflows. Source availability does not establish model performance; held-out evaluation,model cards and demonstration evidence must be completed before academic claims.</p><h2>Data and artwork credits</h2><p>Catalogue metadata and artwork are imported only under reviewed source terms. If TMDB metadata or artwork is used,the demonstration operator must provide its required logo and attribution: “This product uses the TMDB API but is not endorsed or certified by TMDB.” MovieLens ratings and tags are not full textual reviews; Stanford IMDb is a separate binary sentiment benchmark.</p></article>;}
+export default function About() {
+  return (
+    <article className="prose">
+      <header className="page-heading">
+        <span className="eyebrow">BEHIND THE SCREEN</span>
+        <h1>Movie Review &amp; Recommendation System</h1>
+        <p>A combined Big Data Analysis and Text Analytics project.</p>
+      </header>
+
+      <div className="info-box">
+        <strong>Local Python API &amp; PostgreSQL connected</strong>
+        <p>
+          Catalogue search, reviews, ratings, watchlists, and grounded companion queries run against the local FastAPI backend and PostgreSQL database.
+        </p>
+        <p>
+          Audience sentiment scores appear only when approved models and sufficient evidence exist. Star ratings and personalized matches stay distinct.
+        </p>
+      </div>
+
+      <div className="credits">
+        <img src="/assets/tmdb-attribution-logo.svg" alt="TMDB" width={85} />
+        <p>This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+        <a href="https://www.themoviedb.org" target="_blank" rel="noopener noreferrer">
+          Movie images: TMDB
+        </a>
+      </div>
+    </article>
+  );
+}

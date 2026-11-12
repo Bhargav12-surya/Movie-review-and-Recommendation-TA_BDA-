@@ -1,0 +1,22 @@
+{
+  "status": "pending_training_approval_and_resources",
+  "config_path": "configs/local/als-validation-c8378830710a4feeb97d5671a9542ba1/als-validation.json",
+  "approval_path": "configs/local/als-validation-c8378830710a4feeb97d5671a9542ba1/approval-pending.json",
+  "jar_path": "artifacts/scala-build/manual-final-002/movieintel-spark_2.13-0.1.0.jar",
+  "jar_sha256": "a2d8715a8001d809e53550819640c780f9efed6dd6c2f21449351671b476cb68",
+  "split_counts": {
+    "train": 30293045,
+    "validation": 913105,
+    "test": 794054
+  },
+  "parameters": {
+    "rank": 32,
+    "regularization": 0.1,
+    "iterations": 10,
+    "seed": 42
+  },
+  "execution": "CPU Spark local[2], 3 GiB JVM heap",
+  "minimum_available_ram_gib": 4,
+  "evaluation": "Validation only; sampled ranking, not full-catalogue ranking.",
+  "training_started": false
+}

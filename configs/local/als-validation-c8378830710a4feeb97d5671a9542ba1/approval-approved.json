@@ -1,0 +1,14 @@
+{
+  "training_approved": true,
+  "source_permission_reviewed": true,
+  "split_reviewed": true,
+  "approved_by": "project-owner",
+  "run_id": "als-validation-c8378830710a4feeb97d5671a9542ba1",
+  "config_sha256": "2b0f3cc50c40be753c4d4422f29d2c6dbf5a1e3820a78cbad0d866e8d5027c2a",
+  "model_frozen": false,
+  "final_test_approved": false,
+  "approved_at_utc": "2026-11-12T02:48:10.029793+00:00",
+  "approval_scope": "One ALS validation run using this exact configuration.",
+  "source_permission_reference": "data/raw/movielens/ml-32m/README.txt",
+  "source_permission_sha256": "aadef501245798f04f085b1edc024bad41343e0f065b5e4682eff38d54e1cb32"
+}

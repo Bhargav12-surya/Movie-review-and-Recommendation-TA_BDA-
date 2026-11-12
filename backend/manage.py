@@ -44,6 +44,8 @@ def main():
                 session.add(Movie(id=identifier,title=row['title'],overview=row.get('overview',''),genres=row.get('genres',[]),keywords=row.get('keywords',[]),
                     release_date=row.get('release_date'),runtime_minutes=row.get('runtime_minutes'),original_language=row.get('original_language'),
                     poster_path=row.get('poster_path'),metadata_source=row['metadata_source'],canonical_mapping_approved=True,features=features))
+                # Persist the movie before inserting external IDs.
+                session.flush()
                 external_ids=row.get('external_ids',{})
                 if external_ids and (row.get('external_mappings_approved') is not True or not row.get('external_mapping_reference')):
                     raise ValueError('External movie mappings require explicit reviewed provenance independent of title matching.')

@@ -6,7 +6,20 @@ export async function api<T>(path:string,options:RequestInit={},token?:string|nu
  if(token)headers.set("Authorization",`Bearer ${token}`);
  const response=await fetch(API+path,{...options,headers,cache:"no-store"});
  if(response.status===204)return undefined as T;
- const result=await response.json().catch(()=>({}));
+ // Reject cancelled or invalid JSON instead of returning an empty object.
+ let result;
+ try {
+   result = await response.json();
+ } catch (error) {
+   if (options.signal?.aborted ||
+       (error instanceof DOMException && error.name === 'AbortError')) {
+     throw error;
+   }
+   throw new ApiError(response.ok ? 502 : response.status, 'invalid_api_response');
+ }
+ if (options.signal?.aborted) {
+   throw new DOMException('Request cancelled', 'AbortError');
+ }
  if(!response.ok)throw new ApiError(response.status,result?.error?.code ?? result?.detail ?? "service_unavailable");
  return result as T;
 }

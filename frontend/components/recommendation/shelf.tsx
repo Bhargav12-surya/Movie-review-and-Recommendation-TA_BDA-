@@ -1,2 +1,50 @@
-import Link from 'next/link';import type {Recommendation} from '@/lib/types';import {Poster} from '@/components/movie/card';
-export function RecommendationShelf({items}:{items:Recommendation[]}){return <div className="recommendation-grid">{items.map(row=><article className="recommendation" key={row.movie_id}><Link href={`/movies/${row.movie_id}`}><Poster movie={row.movie}/><h3>{row.movie.title}</h3></Link><span className="eyebrow">Personalized match · {Math.round(row.match_score*100)}%</span><p>{row.movie.genres.join(' / ')}</p><div className="tags">{Object.entries(row.contributions).filter(([,value])=>value>0).map(([name,value])=><span key={name}>{name} · {(value*100).toFixed(0)} points</span>)}</div>{Object.entries(row.evidence).filter(([name])=>name==='genre'||name==='theme').map(([name,value])=><p key={name}>Matching {name}s: {Object.keys(value as Record<string,number>).join(', ')||'none'}</p>)}<p>Explanation is based on the contributing model and preference inputs. This is separate from audience sentiment.</p></article>)}</div>;}
+import Link from "next/link";
+import type {Recommendation} from "@/lib/types";
+import {Poster} from "@/components/movie/card";
+import {ArrowIcon, SparkIcon} from "@/components/ui/icons";
+
+export function RecommendationShelf({items}: {items: Recommendation[]}) {
+  return (
+    <div className="recommendation-grid">
+      {items.map((row) => (
+        <article className="movie-card" key={row.movie_id}>
+          <Link
+            href={`/movies/${row.movie_id}`}
+            className="poster-button"
+            aria-label={`Explore ${row.movie.title}`}
+          >
+            <Poster movie={row.movie} />
+            <span className="poster-hover">
+              Explore film <ArrowIcon size={14} />
+            </span>
+            <span className="rated-badge">
+              <SparkIcon size={12} />
+              {Math.round(row.match_score * 100)}% match
+            </span>
+          </Link>
+
+          <Link href={`/movies/${row.movie_id}`} className="movie-title">
+            {row.movie.title}
+          </Link>
+
+          <div className="movie-meta">
+            {row.movie.release_date?.slice(0, 4) ?? "—"} <span>·</span>{" "}
+            {row.movie.genres.slice(0, 2).join(" / ") || "—"}
+          </div>
+
+          {Object.entries(row.evidence)
+            .filter(([name]) => name === "genre" || name === "theme")
+            .map(([name, value]) => {
+              const keys = Object.keys((value as Record<string, number>) ?? {});
+              if (!keys.length) return null;
+              return (
+                <p className="match-reason" key={name}>
+                  {keys.join(" + ")}
+                </p>
+              );
+            })}
+        </article>
+      ))}
+    </div>
+  );
+}

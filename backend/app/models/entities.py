@@ -1,6 +1,6 @@
 """Application UUIDs, canonical movie IDs and revisioned evidence stay separate."""
 import uuid
-from sqlalchemy import Column, String, Text, Integer, BigInteger, Boolean, DateTime, Numeric, ForeignKey, UniqueConstraint, CheckConstraint, Index, func, text
+from sqlalchemy import Column, String, Text, Integer, BigInteger, Boolean, DateTime, Numeric, ForeignKey, UniqueConstraint, CheckConstraint, Index, func, text as sql_text
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import DeclarativeBase
 from pgvector.sqlalchemy import Vector
@@ -11,7 +11,7 @@ class Base(DeclarativeBase):
 
 
 def uid():
-    return Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=text('gen_random_uuid()'))
+    return Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=sql_text('gen_random_uuid()'))
 
 
 def created():
@@ -19,18 +19,18 @@ def created():
 
 
 def obj():
-    return Column(JSONB, nullable=False, default=dict, server_default=text("'{}'::jsonb"))
+    return Column(JSONB, nullable=False, default=dict, server_default=sql_text("'{}'::jsonb"))
 
 
 def arr():
-    return Column(JSONB, nullable=False, default=list, server_default=text("'[]'::jsonb"))
+    return Column(JSONB, nullable=False, default=list, server_default=sql_text("'[]'::jsonb"))
 
 
 class User(Base):
     __tablename__='users'
     id=uid(); email=Column(String(254), nullable=False, unique=True); display_name=Column(String(80), nullable=False)
-    password_hash=Column(Text, nullable=False); is_active=Column(Boolean, nullable=False, default=True, server_default=text('true'))
-    is_admin=Column(Boolean, nullable=False, default=False, server_default=text('false')); created_at=created()
+    password_hash=Column(Text, nullable=False); is_active=Column(Boolean, nullable=False, default=True, server_default=sql_text('true'))
+    is_admin=Column(Boolean, nullable=False, default=False, server_default=sql_text('false')); created_at=created()
 
 
 class AuthSession(Base):
@@ -45,7 +45,7 @@ class Movie(Base):
     title=Column(String(300), nullable=False, index=True); overview=Column(Text, nullable=False, default='', server_default='')
     release_date=Column(String(10)); runtime_minutes=Column(Integer); original_language=Column(String(20))
     poster_path=Column(Text); backdrop_path=Column(Text); genres=arr(); keywords=arr(); features=obj()
-    metadata_source=Column(String(80), nullable=False); canonical_mapping_approved=Column(Boolean, nullable=False, default=False, server_default=text('false'))
+    metadata_source=Column(String(80), nullable=False); canonical_mapping_approved=Column(Boolean, nullable=False, default=False, server_default=sql_text('false'))
     content_version=Column(Integer, nullable=False, default=1, server_default='1'); evidence_version=Column(Integer, nullable=False, default=0, server_default='0'); created_at=created()
     __table_args__=(CheckConstraint('id>0 AND content_version>0 AND evidence_version>=0'), CheckConstraint('runtime_minutes IS NULL OR runtime_minutes>0'))
 
@@ -63,12 +63,12 @@ class Review(Base):
     movie_id=Column(BigInteger, ForeignKey('movies.id'), nullable=False, index=True)
     revision=Column(Integer, nullable=False, default=1, server_default='1'); text=Column(Text, nullable=False)
     text_sha256=Column(String(64), nullable=False); language_code=Column(String(16), nullable=False)
-    user_rating=Column(Numeric(2,1)); training_permitted=Column(Boolean, nullable=False, default=False, server_default=text('false'))
-    evidence_permitted=Column(Boolean, nullable=False, default=False, server_default=text('false'))
+    user_rating=Column(Numeric(2,1)); training_permitted=Column(Boolean, nullable=False, default=False, server_default=sql_text('false'))
+    evidence_permitted=Column(Boolean, nullable=False, default=False, server_default=sql_text('false'))
     consent_version=Column(String(80), nullable=False); moderation_status=Column(String(20), nullable=False, default='published', server_default='published')
-    moderation_permitted=Column(Boolean, nullable=False, default=False, server_default=text('false'))
+    moderation_permitted=Column(Boolean, nullable=False, default=False, server_default=sql_text('false'))
     analysis_status=Column(String(24), nullable=False, default='pending', server_default='pending')
-    is_deleted=Column(Boolean, nullable=False, default=False, server_default=text('false')); is_synthetic=Column(Boolean, nullable=False, default=False, server_default=text('false'))
+    is_deleted=Column(Boolean, nullable=False, default=False, server_default=sql_text('false')); is_synthetic=Column(Boolean, nullable=False, default=False, server_default=sql_text('false'))
     created_at=created(); updated_at=Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
     __table_args__=(CheckConstraint('revision>0'), CheckConstraint('user_rating IS NULL OR (user_rating>=0.5 AND user_rating<=5 AND mod(user_rating*2,1)=0)'),
         CheckConstraint("analysis_status IN ('pending','running','complete','partial','unavailable','failed','unsupported','cancelled')"),
@@ -95,7 +95,7 @@ class ModelArtifact(Base):
     __tablename__='model_artifacts'
     id=uid(); component=Column(String(40), nullable=False); version=Column(String(128), nullable=False)
     config_path=Column(Text, nullable=False); run_path=Column(Text, nullable=False); manifest_sha256=Column(String(64), nullable=False)
-    approved=Column(Boolean, nullable=False, default=False, server_default=text('false')); language_scope=arr(); approval_reference=Column(Text, nullable=False)
+    approved=Column(Boolean, nullable=False, default=False, server_default=sql_text('false')); language_scope=arr(); approval_reference=Column(Text, nullable=False)
     created_at=created(); __table_args__=(UniqueConstraint('component','version'),UniqueConstraint('version'),)
 
 
@@ -114,14 +114,14 @@ class MovieScore(Base):
     id=uid(); movie_id=Column(BigInteger, ForeignKey('movies.id', ondelete='CASCADE'), nullable=False, index=True)
     score_type=Column(String(20), nullable=False); target_key=Column(String(80)); evidence_version=Column(Integer, nullable=False)
     score=Column(Numeric(6,3)); payload=obj(); model_version=Column(String(128), nullable=False); method_version=Column(String(128), nullable=False)
-    is_stale=Column(Boolean, nullable=False, default=False, server_default=text('false')); created_at=created()
+    is_stale=Column(Boolean, nullable=False, default=False, server_default=sql_text('false')); created_at=created()
     __table_args__=(CheckConstraint('score IS NULL OR (score>=0 AND score<=100)'),)
 
 
 class MovieSummary(Base):
     __tablename__='movie_summaries'
     id=uid(); movie_id=Column(BigInteger, ForeignKey('movies.id', ondelete='CASCADE'), nullable=False, index=True)
-    evidence_version=Column(Integer, nullable=False); payload=obj(); is_stale=Column(Boolean, nullable=False, default=False, server_default=text('false')); created_at=created()
+    evidence_version=Column(Integer, nullable=False); payload=obj(); is_stale=Column(Boolean, nullable=False, default=False, server_default=sql_text('false')); created_at=created()
 
 
 class MovieEmbedding(Base):
@@ -155,7 +155,7 @@ class Watchlist(Base):
 class Preference(Base):
     __tablename__='preferences'
     user_id=Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
-    genres=obj(); themes=obj(); personalization_permitted=Column(Boolean, nullable=False, default=False, server_default=text('false'))
+    genres=obj(); themes=obj(); personalization_permitted=Column(Boolean, nullable=False, default=False, server_default=sql_text('false'))
     updated_at=Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
 
 
